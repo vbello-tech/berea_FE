@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Berea</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Warm, reverent palette — deep brown-black rather than blue-black,
+               with an illuminated-manuscript gold as the primary accent and a
+               muted wine as the secondary accent. Two accents, one semantic
+               success color, no gradients. */
+            --bg-main: #14100c;
+            --bg-panel: #1d1811;
+            --bg-card: #262019;
+            --bg-input: #100d08;
+            --border-color: #3d3427;
+            --border-focus: #c9a24d;
+            --text-primary: #f3ede0;
+            --text-secondary: #b7ab90;
+            --text-muted: #83775f;
+            --accent-blue: #c9a24d;   /* primary accent: gold — kept var name so existing rules inherit it */
+            --accent-gold: #97402f;  /* secondary accent: wine — used for tags/labels */
+            --accent-green: #7c9473; /* semantic success only */
+            --accent-purple: #c9a24d; /* no longer used for gradients; kept as alias */
+            --font-display: 'Cormorant Garamond', 'Lora', serif;
+            --radius-lg: 12px;
+            --radius-md: 8px;
+            --radius-sm: 6px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Top Navigation Header */
+        header {
+            background-color: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 1.35rem;
+            color: var(--text-primary);
+            letter-spacing: 0.2px;
+        }
+
+        .brand i {
+            color: var(--accent-blue);
+            font-size: 1.3rem;
+        }
+
+        .user-nav {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-main);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        /* App Container Layout */
+        .app-container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar-nav {
+            width: 60px;
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            gap: 24px;
+        }
+
+        .nav-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-icon:hover, .nav-icon.active {
+            background-color: var(--bg-card);
+            color: var(--accent-blue);
+        }
+
+        /* Main Grid Workspace */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Left Main Panel: Reader */
+        .reader-panel {
+            padding: 24px 32px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-header h2 {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            color: var(--text-primary);
+        }
+
+        /* Passage Finder Controls Card */
+        .passage-finder {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+        }
+
+        .finder-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            text-transform: uppercase;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-control {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s ease;
+            width: 100%;
+        }
+
+        .input-control:focus {
+            border-color: var(--border-focus);
+        }
+
+        select.input-control {
+            cursor: pointer;
+        }
+
+        .btn-fetch {
+            background-color: var(--accent-blue);
+            color: #1d1811;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 10px 18px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 42px;
+        }
+
+        .btn-fetch:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Passage Text Viewer */
+        .passage-display {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 36px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .scripture-content {
+            font-family: 'Lora', Georgia, serif;
+            font-size: 1.45rem;
+            line-height: 1.85;
+            color: var(--text-primary);
+            letter-spacing: 0.2px;
+        }
+
+        .verse-num {
+            font-family: 'Lora', serif;
+            font-style: italic;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-right: 6px;
+            user-select: none;
+            vertical-align: super;
+        }
+
+        .passage-footer {
+            margin-top: auto;
+            padding-top: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Right Panel: Study Suite */
+        .study-panel {
+            background-color: var(--bg-panel);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .study-header {
+            padding: 20px 20px 0 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .study-title {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        /* Switchable Tabs Bar */
+        .tabs-header {
+            display: flex;
+            gap: 8px;
+            position: relative;
+            bottom: -1px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 16px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-secondary);
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-blue);
+            background-color: var(--bg-card);
+            border-color: var(--border-color);
+            border-bottom: 2px solid var(--accent-blue);
+        }
+
+        .tab-count {
+            background-color: var(--bg-input);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .tab-btn.active .tab-count {
+            background-color: rgba(201, 162, 77, 0.2);
+            color: var(--accent-blue);
+        }
+
+        /* Tabs Content Area */
+        .tabs-body {
+            flex: 1;
+            overflow-y: auto;
+            background-color: var(--bg-card);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            height: 100%;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        .strongs-badge {
+            font-family: monospace;
+            background-color: rgba(201, 162, 77, 0.1);
+            color: var(--accent-blue);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+        }
+
+        /* Interlinear List View (real per-word Strong's tagging) */
+        .interlinear-note {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            padding: 8px 2px 12px;
+            line-height: 1.4;
+        }
+
+        .interlinear-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .verse-group-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin: 10px 0 0;
+            padding: 8px 4px;
+            border-bottom: 1px solid var(--border-color);
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            width: 100%;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .verse-group:first-child .verse-group-heading {
+            margin-top: 0;
+        }
+
+        .verse-group-heading:hover {
+            color: var(--text-primary);
+        }
+
+        .verse-group-heading .chevron {
+            transition: transform 0.2s ease;
+            color: var(--text-muted);
+        }
+
+        .verse-group-heading[aria-expanded="true"] .chevron {
+            transform: rotate(180deg);
+        }
+
+        .verse-group-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 8px 2px 4px;
+        }
+
+        .verse-group-rows[hidden] {
+            display: none;
+        }
+
+        .bulk-xref-heading {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin: 10px 0 4px;
+        }
+
+        .interlinear-row {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .interlinear-row:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .interlinear-row.active {
+            background-color: rgba(201, 162, 77, 0.1);
+            border-color: var(--accent-blue);
+        }
+
+        .interlinear-pos {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            width: 18px;
+            flex-shrink: 0;
+        }
+
+        .interlinear-original {
+            font-family: 'Lora', serif;
+            color: var(--accent-blue);
+            font-size: 1rem;
+            min-width: 70px;
+        }
+
+        .interlinear-translit {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-style: italic;
+            min-width: 70px;
+        }
+
+        .interlinear-gloss {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            flex: 1;
+        }
+
+        .interlinear-morph {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        /* Word Detail Popover -- shown when a tagged word is clicked */
+        .word-popover {
+            position: fixed;
+            max-width: 360px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--accent-blue);
+            border-radius: var(--radius-md);
+            padding: 16px 18px;
+            line-height: 1.5;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+            z-index: 200;
+            display: none;
+        }
+
+        .word-popover.show { display: block; }
+
+        .word-popover-close {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+            line-height: 1;
+            padding: 4px;
+        }
+
+        .word-popover-original {
+            font-family: 'Lora', serif;
+            font-size: 1.6rem;
+            color: var(--accent-blue);
+        }
+
+        .word-popover-translit {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+
+        .word-popover-senses {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin: 10px 0;
+            padding-left: 18px;
+        }
+
+        .word-popover-senses li { margin-bottom: 5px; }
+
+        .word-popover-loading {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        .kjv-word.taggable {
+            cursor: pointer;
+            border-bottom: 1px dotted var(--accent-blue);
+        }
+
+        .kjv-word.taggable:hover, .kjv-word.taggable.active {
+            background-color: rgba(201, 162, 77, 0.15);
+            border-radius: 3px;
+        }
+
+        /* Cross Reference List View */
+        .cross-ref-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .cross-ref-card {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .cross-ref-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateX(2px);
+        }
+
+        .cross-ref-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .cross-ref-ref {
+            font-weight: 700;
+            color: var(--accent-blue);
+            font-size: 0.9rem;
+        }
+
+        .cross-ref-tag {
+            font-size: 0.7rem;
+            background-color: rgba(151, 64, 47, 0.15);
+            color: var(--accent-gold);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .cross-ref-text {
+            font-family: 'Lora', serif;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+
+        .bulk-xref-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        .bulk-xref-row:hover {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .bulk-xref-ref {
+            color: var(--accent-blue);
+            font-weight: 500;
+        }
+
+        .bulk-xref-votes {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        .bulk-xref-votes.negative { color: #f87171; }
+
+        /* Bottom Section: Notes Panel */
+        .notes-section {
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-panel);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 220px;
+        }
+
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notes-header label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .notes-editor {
+            width: 100%;
+            flex: 1;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            padding: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .notes-editor:focus {
+            border-color: var(--border-focus);
+        }
+
+        .passage-display.is-loading .scripture-content { opacity: 0.35; }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex: 1;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-state i { font-size: 1.8rem; color: var(--text-muted); }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 18px;
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 100;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast i { color: var(--accent-green); }
+        .toast.error i { color: #f87171; }
+
+        .nav-icon:focus-visible,
+        .tab-btn:focus-visible,
+        .btn-fetch:focus-visible,
+        .input-control:focus-visible {
+            outline: 2px solid var(--border-focus);
+            outline-offset: 2px;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+            .study-panel {
+                height: 500px;
+            }
+            .controls-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Toolbar -->
+    <header>
+        <div class="brand">
+            <i class="fa-solid fa-book-bible"></i>
+            <span>BereaScripture Study</span>
+        </div>
+        <div class="user-nav" id="user-nav">
+            <div id="auth-controls" style="display:flex; align-items:center; gap:8px;">
+                <input type="text" id="auth-username" class="input-control" placeholder="Username" style="width:110px;" autocomplete="username">
+                <input type="password" id="auth-password" class="input-control" placeholder="Password" style="width:110px;" autocomplete="current-password">
+                <button type="button" id="btn-login" class="btn-fetch" style="padding:6px 12px;">Log In</button>
+                <button type="button" id="btn-register" class="btn-fetch" style="padding:6px 12px; background-color: var(--bg-input);">Sign Up</button>
+            </div>
+            <div id="auth-loggedin" style="display:none; align-items:center; gap:10px;">
+                <span id="auth-username-label">Workspace</span>
+                <div class="user-avatar" id="user-avatar">?</div>
+                <button type="button" id="btn-logout" class="btn-fetch" style="padding:6px 12px; background-color: var(--bg-input);">Log Out</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Application Grid -->
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar-nav" aria-label="Primary">
+            <button type="button" class="nav-icon active" title="Scripture Reader" aria-label="Scripture Reader" aria-pressed="true">
+                <i class="fa-solid fa-book-open"></i>
+            </button>
+            <button type="button" class="nav-icon" title="Search Concordance" aria-label="Search Concordance" aria-pressed="false">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+            <button type="button" class="nav-icon" title="Saved Notes" aria-label="Saved Notes" aria-pressed="false">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button type="button" class="nav-icon" title="Settings" aria-label="Settings" aria-pressed="false" style="margin-top: auto;">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+        </nav>
+
+        <div class="workspace">
+            <!-- Left Reader Panel -->
+            <main class="reader-panel">
+                <div class="section-header">
+                    <h2>Scripture Reader</h2>
+                </div>
+
+                <!-- Passage Finder Form -->
+                <div class="passage-finder">
+                    <div class="finder-title">Passage Finder</div>
+                    <div class="controls-grid">
+                        <div class="input-group">
+                            <label for="book-select">Book</label>
+                            <select id="book-select" class="input-control">
+                                <option value="Genesis">Genesis</option>
+                                <option value="Exodus">Exodus</option>
+                                <option value="Leviticus">Leviticus</option>
+                                <option value="Numbers">Numbers</option>
+                                <option value="Deuteronomy">Deuteronomy</option>
+                                <option value="Joshua">Joshua</option>
+                                <option value="Judges">Judges</option>
+                                <option value="Ruth">Ruth</option>
+                                <option value="1 Samuel">1 Samuel</option>
+                                <option value="2 Samuel">2 Samuel</option>
+                                <option value="1 Kings">1 Kings</option>
+                                <option value="2 Kings">2 Kings</option>
+                                <option value="1 Chronicles">1 Chronicles</option>
+                                <option value="2 Chronicles">2 Chronicles</option>
+                                <option value="Ezra">Ezra</option>
+                                <option value="Nehemiah">Nehemiah</option>
+                                <option value="Esther">Esther</option>
+                                <option value="Job">Job</option>
+                                <option value="Psalm">Psalm</option>
+                                <option value="Proverbs">Proverbs</option>
+                                <option value="Ecclesiastes">Ecclesiastes</option>
+                                <option value="Song Of Solomon">Song Of Solomon</option>
+                                <option value="Isaiah">Isaiah</option>
+                                <option value="Jeremiah">Jeremiah</option>
+                                <option value="Lamentations">Lamentations</option>
+                                <option value="Ezekiel">Ezekiel</option>
+                                <option value="Daniel">Daniel</option>
+                                <option value="Hosea">Hosea</option>
+                                <option value="Joel">Joel</option>
+                                <option value="Amos">Amos</option>
+                                <option value="Obadiah">Obadiah</option>
+                                <option value="Jonah">Jonah</option>
+                                <option value="Micah">Micah</option>
+                                <option value="Nahum">Nahum</option>
+                                <option value="Habakkuk">Habakkuk</option>
+                                <option value="Zephaniah">Zephaniah</option>
+                                <option value="Haggai">Haggai</option>
+                                <option value="Zechariah">Zechariah</option>
+                                <option value="Malachi">Malachi</option>
+                                <option value="Matthew">Matthew</option>
+                                <option value="Mark">Mark</option>
+                                <option value="Luke">Luke</option>
+                                <option value="John" selected>John</option>
+                                <option value="Acts">Acts</option>
+                                <option value="Romans">Romans</option>
+                                <option value="1 Corinthians">1 Corinthians</option>
+                                <option value="2 Corinthians">2 Corinthians</option>
+                                <option value="Galatians">Galatians</option>
+                                <option value="Ephesians">Ephesians</option>
+                                <option value="Philippians">Philippians</option>
+                                <option value="Colossians">Colossians</option>
+                                <option value="1 Thessalonians">1 Thessalonians</option>
+                                <option value="2 Thessalonians">2 Thessalonians</option>
+                                <option value="1 Timothy">1 Timothy</option>
+                                <option value="2 Timothy">2 Timothy</option>
+                                <option value="Titus">Titus</option>
+                                <option value="Philemon">Philemon</option>
+                                <option value="Hebrews">Hebrews</option>
+                                <option value="James">James</option>
+                                <option value="1 Peter">1 Peter</option>
+                                <option value="2 Peter">2 Peter</option>
+                                <option value="1 John">1 John</option>
+                                <option value="2 John">2 John</option>
+                                <option value="3 John">3 John</option>
+                                <option value="Jude">Jude</option>
+                                <option value="Revelation">Revelation</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="ch-input">Ch.</label>
+                            <input type="number" id="ch-input" class="input-control" value="3" min="1" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="start-vs">Start Vs</label>
+                            <input type="number" id="start-vs" class="input-control" value="16" min="1" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="end-vs">End Vs</label>
+                            <input type="number" id="end-vs" class="input-control" value="17" min="1" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="trans-select">Translation</label>
+                            <select id="trans-select" class="input-control">
+                                <option value="KJV" selected>KJV</option>
+                            </select>
+                        </div>
+                        <button class="btn-fetch" id="btn-load">
+                            <i class="fa-solid fa-arrow-right"></i> Load
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Passage Reader Display -->
+                <div class="passage-display" id="passage-display">
+                    <div class="scripture-content" id="scripture-content">
+                        <p>
+                            <span class="verse-num">16</span>For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.
+                        </p>
+                        <br>
+                        <p>
+                            <span class="verse-num">17</span>For God sent not his Son into the world to condemn the world; but that the world through him might be saved.
+                        </p>
+                    </div>
+
+                    <div class="passage-footer">
+                        <span id="current-display-label">Current Display: John 3:16-17 (KJV)</span>
+                        <span>Click a word for its Strong's entry</span>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Right Study Suite Panel -->
+            <aside class="study-panel">
+                <div class="study-header">
+                    <div class="study-title">Study Suite</div>
+
+                    <!-- Switchable Side-by-Side Tabs -->
+                    <div class="tabs-header" role="tablist">
+                        <button class="tab-btn active" data-tab="tab-interlinear" role="tab" aria-selected="true" aria-controls="tab-interlinear">
+                            <i class="fa-solid fa-language"></i>
+                            Interlinear
+                            <span class="tab-count" id="interlinear-count">0</span>
+                        </button>
+                        <button class="tab-btn" data-tab="tab-crossref" role="tab" aria-selected="false" aria-controls="tab-crossref">
+                            <i class="fa-solid fa-diagram-project"></i>
+                            Cross Ref
+                            <span class="tab-count" id="crossref-count">3</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabs Content Body -->
+                <div class="tabs-body">
+                    
+                    <!-- TAB 0: INTERLINEAR (real per-word Strong's data, authoritative) -->
+                    <div class="tab-content active" id="tab-interlinear">
+                        <div class="interlinear-note" id="interlinear-note">
+                            Load a passage to see the real Greek/Hebrew word-by-word tagging.
+                        </div>
+                        <div class="interlinear-list" id="interlinear-list"></div>
+                    </div>
+
+                    <!-- TAB 1: CROSS REFERENCE -->
+                    <div class="tab-content" id="tab-crossref">
+                        <div class="cross-ref-list" id="cross-ref-list">
+                            <div class="cross-ref-card">
+                                <div class="cross-ref-header">
+                                    <span class="cross-ref-ref">Romans 8:5</span>
+                                    <span class="cross-ref-tag">Love / Mind</span>
+                                </div>
+                                <div class="cross-ref-text">
+                                    "For they that are after the flesh do mind the things of the flesh; but they that are after the Spirit the things of the Spirit."
+                                </div>
+                            </div>
+
+                            <div class="cross-ref-card">
+                                <div class="cross-ref-header">
+                                    <span class="cross-ref-ref">Romans 5:8</span>
+                                    <span class="cross-ref-tag">God's Love</span>
+                                </div>
+                                <div class="cross-ref-text">
+                                    "But God commendeth his love toward us, in that, while we were yet sinners, Christ died for us."
+                                </div>
+                            </div>
+
+                            <div class="cross-ref-card">
+                                <div class="cross-ref-header">
+                                    <span class="cross-ref-ref">1 John 4:9</span>
+                                    <span class="cross-ref-tag">Only Begotten</span>
+                                </div>
+                                <div class="cross-ref-text">
+                                    "In this was manifested the love of God toward us, because that God sent his only begotten Son into the world, that we might live through him."
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Bottom Study Notes Section -->
+                <div class="notes-section">
+                    <div class="notes-header">
+                        <label for="study-notes">
+                            <i class="fa-regular fa-note-sticky"></i>
+                            Personal Notes
+                        </label>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span id="notes-status" style="font-size:0.7rem; color: var(--text-muted);"></span>
+                            <button type="button" id="btn-clear-note" title="Clear Note" aria-label="Clear note" style="background:none; border:none; cursor:pointer; padding:4px; color: var(--text-muted); font-size: 0.8rem;">
+                                <i class="fa-solid fa-rotate-left"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea id="study-notes" class="notes-editor" placeholder="Log in to save personal notes for this passage."></textarea>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script>
+        // ---------- Live API configuration ----------
+        // Point this at your running Django backend. During local development
+        // that's typically http://127.0.0.1:8000/api ; in production, swap in
+        // your deployed API's origin.
+        const API_BASE = 'http://127.0.0.1:8000/api';
+
+        // Auth token lives only in memory for this page session (no
+        // localStorage), so logging in again is required after a refresh.
+        // For a real deployment, persist the token in an httpOnly cookie
+        // set by the server, or in localStorage from your own app shell.
+        let authToken = null;
+
+        async function apiFetch(path, options = {}) {
+            const headers = Object.assign({ 'Content-Type': 'application/json' }, options.headers || {});
+            if (authToken) headers['Authorization'] = `Token ${authToken}`;
+            const res = await fetch(`${API_BASE}${path}`, Object.assign({}, options, { headers }));
+            let data = null;
+            try { data = await res.json(); } catch (_) { /* no body */ }
+            if (!res.ok) {
+                const detail = (data && (data.detail || JSON.stringify(data))) || res.statusText;
+                throw new Error(detail);
+            }
+            return data;
+        }
+
+        // ---------- Toast helper ----------
+        let toastTimer = null;
+        function showToast(message, isError = false) {
+            let toast = document.getElementById('app-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'app-toast';
+                toast.className = 'toast';
+                toast.innerHTML = `<i class="fa-solid fa-circle-check"></i><span id="app-toast-text"></span>`;
+                document.body.appendChild(toast);
+            }
+            toast.classList.toggle('error', isError);
+            toast.querySelector('i').className = isError ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-circle-check';
+            toast.querySelector('#app-toast-text').textContent = message;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+        }
+
+        // ---------- Tab switching ----------
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        function activateTab(btn) {
+            tabBtns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+            tabContents.forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            btn.setAttribute('aria-selected', 'true');
+            document.getElementById(btn.getAttribute('data-tab')).classList.add('active');
+        }
+
+        tabBtns.forEach(btn => btn.addEventListener('click', () => activateTab(btn)));
+
+        // ---------- Rendering helpers ----------
+        function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+        // ---------- Best-effort alignment: real word_tags <-> KJV English words ----------
+        // word_tags are in Greek/Hebrew word order with a modern (BSB-based)
+        // gloss, not KJV order or wording -- so this is a heuristic match,
+        // not a guarantee. It's used only to make individual KJV words
+        // clickable; the Interlinear tab always shows the real, unaligned
+        // data as ground truth regardless of how well this matching works.
+        const STOP_WORDS = new Set([
+            'the','a','an','of','to','in','on','and','but','or','that','this',
+            'is','are','was','were','be','he','she','it','they','them','him',
+            'his','her','their','my','thy','thou','thee','unto','for','with',
+            'not','i','you','we','which','who','whom','all','no','so','if',
+            'as','by','at','from','into','upon','shall','will','have','hath',
+        ]);
+
+        function wordForms(word) {
+            word = word.toLowerCase().replace(/[^a-z']/g, '');
+            const forms = new Set([word]);
+            for (const suf of ['ing', 'edst', 'edest', 'eth', 'est', 'ed', 'es', 's']) {
+                if (word.endsWith(suf) && word.length - suf.length >= 3) {
+                    forms.add(word.slice(0, word.length - suf.length));
+                }
+            }
+            return forms;
+        }
+
+        function formsOverlap(a, b) {
+            for (const x of a) if (b.has(x)) return true;
+            return false;
+        }
+
+        function glossKeys(gloss) {
+            const tokens = (gloss || '').toLowerCase().match(/[a-z']+/g) || [];
+            return tokens.filter(t => !STOP_WORDS.has(t) && t.length > 1);
+        }
+
+        function alignWordTagsToWords(textWords, wordTags) {
+            const alignment = {}; // wordIndex -> tag
+            const used = new Set();
+            let lastMatched = -1;
+
+            for (const tag of wordTags) {
+                const keys = glossKeys(tag.gloss);
+                if (keys.length === 0) continue;
+                let matchIdx = null;
+
+                for (const key of keys) {
+                    const keyForms = wordForms(key);
+                    // Prefer the next unused match at or after the last one,
+                    // to keep rough left-to-right ordering.
+                    for (let i = lastMatched + 1; i < textWords.length; i++) {
+                        if (!used.has(i) && formsOverlap(wordForms(textWords[i]), keyForms)) {
+                            matchIdx = i;
+                            break;
+                        }
+                    }
+                    if (matchIdx !== null) break;
+                    // Fall back to any unused occurrence anywhere in the verse.
+                    for (let i = 0; i < textWords.length; i++) {
+                        if (!used.has(i) && formsOverlap(wordForms(textWords[i]), keyForms)) {
+                            matchIdx = i;
+                            break;
+                        }
+                    }
+                    if (matchIdx !== null) break;
+                }
+
+                if (matchIdx !== null) {
+                    alignment[matchIdx] = tag;
+                    used.add(matchIdx);
+                    lastMatched = matchIdx;
+                }
+            }
+            return alignment;
+        }
+
+        function buildVerseHTML(v) {
+            const text = v.text;
+            const tokenRe = /[A-Za-z']+|[^A-Za-z']+/g;
+            const wordTokens = text.match(/[A-Za-z']+/g) || [];
+            const alignment = alignWordTagsToWords(wordTokens, v.word_tags || []);
+
+            let wordIndex = -1;
+            let html = '';
+            let m;
+            while ((m = tokenRe.exec(text)) !== null) {
+                const token = m[0];
+                if (/^[A-Za-z']+$/.test(token)) {
+                    wordIndex++;
+                    const tag = alignment[wordIndex];
+                    if (tag) {
+                        html += `<span class="kjv-word taggable" data-verse="${v.verse_number}" data-position="${tag.position}" data-strongs="${tag.strongs_number}">${token}</span>`;
+                    } else {
+                        html += token;
+                    }
+                } else {
+                    html += token;
+                }
+            }
+            return html;
+        }
+
+        function renderScripture(verses) {
+            return verses.map(v =>
+                `<p><span class="verse-num">${v.verse_number}</span>${buildVerseHTML(v)}</p>`
+            ).join('<br>');
+        }
+
+        // Wraps a per-verse render function's output in a "Verse N" heading,
+        // but only when more than one verse is loaded -- a single-verse
+        // passage doesn't need a heading repeating what's already shown above.
+        // Renders one collapsible "Verse N" section per verse, each starting
+        // collapsed. A toggle button in the heading (with a chevron icon)
+        // reveals or hides that verse's rows -- nothing is shown until the
+        // person clicks a verse's heading.
+        function renderGroupedByVerse(verses, sectionId, rowsForVerse) {
+            return verses.map(v => {
+                const rows = rowsForVerse(v);
+                if (!rows) return '';
+                const rowsId = `${sectionId}-rows-${v.verse_number}`;
+                return `<div class="verse-group">
+                    <button type="button" class="verse-group-heading" data-target="${rowsId}" aria-expanded="false" aria-controls="${rowsId}">
+                        <span>Verse ${v.verse_number}</span>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </button>
+                    <div class="verse-group-rows" id="${rowsId}" hidden>${rows}</div>
+                </div>`;
+            }).join('');
+        }
+
+        // Delegated click handler: works for any accordion section rendered
+        // by renderGroupedByVerse, regardless of which tab it's in.
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.verse-group-heading');
+            if (!btn) return;
+            const rows = document.getElementById(btn.getAttribute('data-target'));
+            if (!rows) return;
+            const expanded = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', String(!expanded));
+            rows.hidden = expanded;
+        });
+
+        function renderInterlinear(verses) {
+            const totalTags = verses.reduce((sum, v) => sum + (v.word_tags || []).length, 0);
+            document.getElementById('interlinear-count').textContent = totalTags;
+            const note = document.getElementById('interlinear-note');
+            const list = document.getElementById('interlinear-list');
+
+            if (totalTags === 0) {
+                note.style.display = 'block';
+                note.textContent = 'No word-by-word tagging available for this passage yet.';
+                list.innerHTML = '';
+                return;
+            }
+
+            note.textContent = 'Real word-by-word tagging, in original Greek/Hebrew word order '
+                + '(not English word order). Click a verse to reveal its words, then click any '
+                + 'word for its full lexicon entry.';
+
+            list.innerHTML = renderGroupedByVerse(verses, 'interlinear', (v) => {
+                const tags = v.word_tags || [];
+                if (tags.length === 0) return '';
+                return tags.map(t => `
+                    <div class="interlinear-row" data-verse="${v.verse_number}" data-position="${t.position}" data-strongs="${t.strongs_number}">
+                        <span class="interlinear-pos">${t.position}</span>
+                        <span class="interlinear-original">${t.original_word}</span>
+                        <span class="interlinear-translit">${t.transliteration || ''}</span>
+                        <span class="interlinear-gloss">${t.gloss || ''}</span>
+                        <span class="strongs-badge">${t.strongs_number}</span>
+                        <span class="interlinear-morph">${t.morphology || ''}</span>
+                    </div>`).join('');
+            });
+        }
+
+        // Curated (tagged) cross-references and the votes-ranked bulk dataset
+        // are combined into one collapsible section per verse, matching how
+        // they're browsed together rather than as two separate lists.
+        function renderCrossRefCards(verses) {
+            const list = document.getElementById('cross-ref-list');
+
+            list.innerHTML = renderGroupedByVerse(verses, 'crossref', (v) => {
+                const curated = v.cross_references || [];
+                const bulk = (v.bulk_cross_references || []).slice().sort((a, b) => b.votes - a.votes);
+                if (curated.length === 0 && bulk.length === 0) return '';
+
+                const curatedHTML = curated.map(r => `
+                    <div class="cross-ref-card">
+                        <div class="cross-ref-header">
+                            <span class="cross-ref-ref">${r.reference_label}</span>
+                            <span class="cross-ref-tag">${r.tag}</span>
+                        </div>
+                        <div class="cross-ref-text">"${r.text}"</div>
+                    </div>`).join('');
+
+                const bulkHTML = bulk.length === 0 ? '' : `
+                    <div class="bulk-xref-heading">More cross-references (by relevance)</div>
+                    ${bulk.map(l => `
+                        <div class="bulk-xref-row">
+                            <span class="bulk-xref-ref">${l.reference_label}</span>
+                            <span class="bulk-xref-votes ${l.votes < 0 ? 'negative' : ''}">${l.votes} votes</span>
+                        </div>`).join('')}`;
+
+                return curatedHTML + bulkHTML;
+            });
+        }
+
+        // Update the Cross Ref tab's count to reflect everything shown there
+        // (curated + bulk), since both lists live in that one tab.
+        function updateCrossRefCount(verses) {
+            const total = verses.reduce((sum, v) =>
+                sum + (v.cross_references || []).length + (v.bulk_cross_references || []).length, 0);
+            document.getElementById('crossref-count').textContent = total;
+        }
+
+        // ---------- Word detail popover (real Strong's lexicon entry) ----------
+        function getOrCreatePopover() {
+            let el = document.getElementById('word-popover');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'word-popover';
+                el.className = 'word-popover';
+                document.body.appendChild(el);
+            }
+            return el;
+        }
+
+        function closePopover() {
+            const el = document.getElementById('word-popover');
+            if (el) el.classList.remove('show');
+        }
+
+        async function showWordPopover(anchorEl, strongsNumber) {
+            const popover = getOrCreatePopover();
+            const rect = anchorEl.getBoundingClientRect();
+            popover.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - 336)) + 'px';
+            popover.style.top = Math.min(rect.bottom + 8, window.innerHeight - 220) + 'px';
+            popover.classList.add('show');
+            popover.innerHTML = `<button class="word-popover-close" aria-label="Close">&times;</button>
+                <div class="word-popover-loading">Loading ${strongsNumber}…</div>`;
+            popover.querySelector('.word-popover-close').addEventListener('click', closePopover);
+
+            try {
+                const data = await apiFetch(`/strongs/?number=${encodeURIComponent(strongsNumber)}`);
+                const senses = (data.senses || []).map(s => `<li>${s}</li>`).join('')
+                    || `<li>${data.strongs_def || 'No definition available.'}</li>`;
+                popover.innerHTML = `
+                    <button class="word-popover-close" aria-label="Close">&times;</button>
+                    <div class="word-popover-original">${data.lemma || ''}</div>
+                    <div class="word-popover-translit">${data.translit || ''} &middot; ${data.number}</div>
+                    <ul class="word-popover-senses">${senses}</ul>
+                    <div style="font-size:0.9rem; color: var(--text-muted); margin-top: 4px;">KJV renders this as: ${data.kjv_def || '&mdash;'}</div>`;
+                popover.querySelector('.word-popover-close').addEventListener('click', closePopover);
+            } catch (err) {
+                popover.innerHTML = `<button class="word-popover-close" aria-label="Close">&times;</button>
+                    <div class="word-popover-loading">Could not load ${strongsNumber}.</div>`;
+                popover.querySelector('.word-popover-close').addEventListener('click', closePopover);
+            }
+        }
+
+        // Expands the accordion section containing a given row, if it's
+        // currently collapsed (e.g. when a KJV word is clicked directly and
+        // its Interlinear verse section hasn't been opened yet).
+        function expandVerseGroupContaining(el) {
+            const rows = el.closest('.verse-group-rows');
+            if (!rows || !rows.hidden) return;
+            rows.hidden = false;
+            const heading = rows.previousElementSibling;
+            if (heading && heading.classList.contains('verse-group-heading')) {
+                heading.setAttribute('aria-expanded', 'true');
+            }
+        }
+
+        function highlightInterlinearRow(verseNumber, position) {
+            document.querySelectorAll('.interlinear-row').forEach(r => r.classList.remove('active'));
+            const row = document.querySelector(
+                `.interlinear-row[data-verse="${verseNumber}"][data-position="${position}"]`
+            );
+            if (row) {
+                expandVerseGroupContaining(row);
+                row.classList.add('active');
+                row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function highlightScriptureWord(verseNumber, position) {
+            document.querySelectorAll('.kjv-word.taggable').forEach(w => w.classList.remove('active'));
+            const word = document.querySelector(
+                `.kjv-word.taggable[data-verse="${verseNumber}"][data-position="${position}"]`
+            );
+            if (word) word.classList.add('active');
+        }
+
+        document.getElementById('interlinear-list').addEventListener('click', (e) => {
+            const row = e.target.closest('.interlinear-row');
+            if (!row) return;
+            const verseNumber = row.getAttribute('data-verse');
+            const position = row.getAttribute('data-position');
+            highlightInterlinearRow(verseNumber, position);
+            highlightScriptureWord(verseNumber, position);
+            showWordPopover(row, row.getAttribute('data-strongs'));
+        });
+
+        document.addEventListener('click', (e) => {
+            const popover = document.getElementById('word-popover');
+            if (!popover || !popover.classList.contains('show')) return;
+            if (popover.contains(e.target)) return;
+            if (e.target.closest('.kjv-word.taggable') || e.target.closest('.interlinear-row')) return;
+            closePopover();
+        });
+
+        // ---------- Real word-tag click highlighting (event delegation) ----------
+        document.getElementById('scripture-content').addEventListener('click', (e) => {
+            const kjvWord = e.target.closest('.kjv-word.taggable');
+            if (kjvWord) {
+                const verseNumber = kjvWord.getAttribute('data-verse');
+                const position = kjvWord.getAttribute('data-position');
+                activateTab(document.querySelector('[data-tab="tab-interlinear"]'));
+                document.querySelectorAll('.kjv-word.taggable').forEach(w => w.classList.remove('active'));
+                kjvWord.classList.add('active');
+                highlightInterlinearRow(verseNumber, position);
+                showWordPopover(kjvWord, kjvWord.getAttribute('data-strongs'));
+            }
+        });
+
+        // ---------- Load passage from the Django API ----------
+        const passageDisplay = document.getElementById('passage-display');
+        const bookSelect = document.getElementById('book-select');
+        const chInput = document.getElementById('ch-input');
+        const startVsInput = document.getElementById('start-vs');
+        const endVsInput = document.getElementById('end-vs');
+        const transSelect = document.getElementById('trans-select');
+        const btnLoad = document.getElementById('btn-load');
+
+        let currentPassage = null; // { book, chapter, start, end } — used by the notes API
+
+        async function loadPassage() {
+            const book = bookSelect.value;
+            const chapter = parseInt(chInput.value, 10);
+            const start = parseInt(startVsInput.value, 10);
+            const end = parseInt(endVsInput.value, 10) || start;
+            const trans = transSelect.value;
+
+            if (!chapter || !start || start > end) {
+                showToast('Please enter a valid chapter and verse range.', true);
+                return;
+            }
+
+            passageDisplay.classList.add('is-loading');
+            btnLoad.disabled = true;
+            btnLoad.dataset.originalLabel = btnLoad.innerHTML;
+            btnLoad.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading…';
+
+            try {
+                const data = await apiFetch(
+                    `/passage/?book=${encodeURIComponent(book)}&chapter=${chapter}&start=${start}&end=${end}&translation=${trans}`
+                );
+                const verses = data.results;
+
+                document.getElementById('scripture-content').innerHTML = renderScripture(verses);
+                renderInterlinear(verses);
+                renderCrossRefCards(verses);
+                updateCrossRefCount(verses);
+                document.getElementById('current-display-label').textContent = `Current Display: ${book} ${chapter}:${start}-${end} (${trans})`;
+
+                currentPassage = { book, chapter, start, end };
+                showToast(`Loaded ${book} ${chapter}:${start}-${end} (${trans})`);
+
+                await loadNoteForCurrentPassage();
+            } catch (err) {
+                document.getElementById('scripture-content').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-book-open-reader"></i>
+                        <div><strong>${book} ${chapter}:${start}${end !== start ? '-' + end : ''}</strong> couldn't be loaded.</div>
+                        <div style="font-size:0.8rem;">${err.message}</div>
+                    </div>`;
+                document.getElementById('cross-ref-list').innerHTML = '';
+                document.getElementById('interlinear-list').innerHTML = '';
+                document.getElementById('interlinear-count').textContent = '0';
+                document.getElementById('crossref-count').textContent = '0';
+                showToast(err.message || 'Could not reach the API. Is the Django server running?', true);
+            } finally {
+                passageDisplay.classList.remove('is-loading');
+                btnLoad.disabled = false;
+                if (btnLoad.dataset.originalLabel) {
+                    btnLoad.innerHTML = btnLoad.dataset.originalLabel;
+                }
+            }
+        }
+
+        btnLoad.addEventListener('click', loadPassage);
+
+        document.querySelector('.controls-grid').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                loadPassage();
+            }
+        });
+
+        // ---------- Personal notes: load/save via API, scoped to the logged-in user ----------
+        const notesEditor = document.getElementById('study-notes');
+        const notesStatus = document.getElementById('notes-status');
+        const btnClearNote = document.getElementById('btn-clear-note');
+        let notesSaveTimer = null;
+
+        async function loadNoteForCurrentPassage() {
+            if (!authToken || !currentPassage) {
+                notesEditor.value = '';
+                notesEditor.disabled = true;
+                notesEditor.placeholder = 'Log in to save personal notes for this passage.';
+                return;
+            }
+            notesEditor.disabled = false;
+            notesEditor.placeholder = 'Type your personal study notes here...';
+            try {
+                const { book, chapter, start, end } = currentPassage;
+                const note = await apiFetch(`/notes/by_passage/?book=${encodeURIComponent(book)}&chapter=${chapter}&start=${start}&end=${end}`);
+                notesEditor.value = note.text || '';
+            } catch (err) {
+                showToast('Could not load your note for this passage.', true);
+            }
+        }
+
+        async function saveCurrentNote() {
+            if (!authToken || !currentPassage) return;
+            const { book, chapter, start, end } = currentPassage;
+            try {
+                await apiFetch(`/notes/by_passage/?book=${encodeURIComponent(book)}&chapter=${chapter}&start=${start}&end=${end}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ text: notesEditor.value }),
+                });
+                notesStatus.textContent = 'Saved';
+                setTimeout(() => { notesStatus.textContent = ''; }, 1500);
+            } catch (err) {
+                notesStatus.textContent = 'Save failed';
+            }
+        }
+
+        notesEditor.addEventListener('input', () => {
+            if (!authToken) return;
+            notesStatus.textContent = 'Saving…';
+            clearTimeout(notesSaveTimer);
+            notesSaveTimer = setTimeout(saveCurrentNote, 700);
+        });
+
+        btnClearNote.addEventListener('click', () => {
+            if (notesEditor.value.trim() && !confirm('Clear your personal notes for this passage?')) {
+                return;
+            }
+            notesEditor.value = '';
+            saveCurrentNote();
+            notesEditor.focus();
+            showToast('Notes cleared');
+        });
+
+        // ---------- Auth: register / login / logout ----------
+        const authUsernameInput = document.getElementById('auth-username');
+        const authPasswordInput = document.getElementById('auth-password');
+        const authControls = document.getElementById('auth-controls');
+        const authLoggedIn = document.getElementById('auth-loggedin');
+        const authUsernameLabel = document.getElementById('auth-username-label');
+        const userAvatar = document.getElementById('user-avatar');
+
+        function setLoggedInUI(username) {
+            authControls.style.display = username ? 'none' : 'flex';
+            authLoggedIn.style.display = username ? 'flex' : 'none';
+            if (username) {
+                authUsernameLabel.textContent = `${username}'s Workspace`;
+                userAvatar.textContent = username.charAt(0).toUpperCase();
+            }
+        }
+
+        async function handleAuth(endpoint) {
+            const username = authUsernameInput.value.trim();
+            const password = authPasswordInput.value;
+            if (!username || !password) {
+                showToast('Enter a username and password.', true);
+                return;
+            }
+            try {
+                const data = await apiFetch(`/auth/${endpoint}/`, {
+                    method: 'POST',
+                    body: JSON.stringify({ username, password, email: `${username}@example.com` }),
+                });
+                authToken = data.token;
+                setLoggedInUI(data.username);
+                authPasswordInput.value = '';
+                showToast(endpoint === 'register' ? `Welcome, ${data.username}!` : `Logged in as ${data.username}`);
+                await loadNoteForCurrentPassage();
+            } catch (err) {
+                showToast(err.message || 'Authentication failed.', true);
+            }
+        }
+
+        document.getElementById('btn-login').addEventListener('click', () => handleAuth('login'));
+        document.getElementById('btn-register').addEventListener('click', () => handleAuth('register'));
+
+        document.getElementById('btn-logout').addEventListener('click', async () => {
+            try { await apiFetch('/auth/logout/', { method: 'POST' }); } catch (_) { /* ignore */ }
+            authToken = null;
+            setLoggedInUI(null);
+            notesEditor.value = '';
+            notesEditor.disabled = true;
+            notesEditor.placeholder = 'Log in to save personal notes for this passage.';
+            showToast('Logged out.');
+        });
+
+        // ---------- Initial load ----------
+        notesEditor.disabled = true;
+        loadPassage();
+    </script>
+</body>
+</html>

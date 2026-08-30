@@ -1,0 +1,20 @@
+{
+  "name": "berea",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Berea — a Scripture reading, word-study, and cross-reference app.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "pinia": "^2.2.4",
+    "vue": "^3.4.38"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.3",
+    "vite": "^5.4.6"
+  }
+}

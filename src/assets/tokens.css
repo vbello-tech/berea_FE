@@ -1,0 +1,61 @@
+/* ---------------------------------------------------------------
+   Berea design tokens.
+   Warm, reverent palette — deep brown-black rather than blue-black,
+   with an illuminated-manuscript gold as the primary accent and a
+   muted wine as the secondary accent. Two accents, one semantic
+   success color, no gradients. Every component references these
+   variables rather than hardcoding colors.
+   --------------------------------------------------------------- */
+:root {
+  --bg-main: #14100c;
+  --bg-panel: #1d1811;
+  --bg-card: #262019;
+  --bg-input: #100d08;
+  --border-color: #3d3427;
+  --border-focus: #c9a24d;
+
+  --text-primary: #f3ede0;
+  --text-secondary: #b7ab90;
+  --text-muted: #83775f;
+
+  --accent-primary: #c9a24d;   /* gold — buttons, links, focus, verse numbers */
+  --accent-secondary: #97402f; /* wine — tags, secondary labels */
+  --accent-success: #7c9473;   /* sage — semantic success only */
+  --accent-error: #f87171;     /* semantic error/negative only */
+
+  --font-display: 'Cormorant Garamond', 'Lora', serif;
+  --font-body: 'Lora', Georgia, serif;
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --radius-sm: 6px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #app {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-ui);
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+/* Shared focus ring, used across interactive elements */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
