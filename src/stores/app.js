@@ -112,15 +112,16 @@ export const useAppStore = defineStore('app', {
     },
 
     // ---------- Word popover (Strong's lexicon lookup) ----------
-    async openPopover(strongsNumber, x, y) {
+    // Always centered on screen rather than anchored to the clicked word,
+    // so it stays put and readable regardless of where in the passage
+    // someone clicks.
+    async openPopover(strongsNumber) {
       this.popover = {
         show: true,
         loading: true,
         error: null,
         data: null,
         strongsNumber,
-        x,
-        y,
       };
       try {
         const data = await apiFetch(`/strongs/?number=${encodeURIComponent(strongsNumber)}`, {}, this.authToken);

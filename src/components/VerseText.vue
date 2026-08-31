@@ -22,10 +22,7 @@ function onWordClick(event, tag) {
   if (!tag) return;
   store.setActiveTab('interlinear');
   store.setActiveWord(props.verse.verse_number, tag.position);
-  const rect = event.target.getBoundingClientRect();
-  const x = Math.max(8, Math.min(rect.left, window.innerWidth - 376));
-  const y = Math.min(rect.bottom + 8, window.innerHeight - 220);
-  store.openPopover(tag.strongs_number, x, y);
+  store.openPopover(tag.strongs_number);
 }
 </script>
 

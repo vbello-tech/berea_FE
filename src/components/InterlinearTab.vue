@@ -14,10 +14,7 @@ function isActiveRow(verseNumber, position) {
 
 function onRowClick(event, verseNumber, tag) {
   store.setActiveWord(verseNumber, tag.position);
-  const rect = event.currentTarget.getBoundingClientRect();
-  const x = Math.max(8, Math.min(rect.left, window.innerWidth - 376));
-  const y = Math.min(rect.bottom + 8, window.innerHeight - 220);
-  store.openPopover(tag.strongs_number, x, y);
+  store.openPopover(tag.strongs_number);
 }
 </script>
 
