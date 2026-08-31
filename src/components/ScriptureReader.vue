@@ -114,6 +114,7 @@ const store = useAppStore();
   .reader-panel {
     padding: 16px;
     gap: 16px;
+    overflow-y: visible;
   }
 
   .passage-display {

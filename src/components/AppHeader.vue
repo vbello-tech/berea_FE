@@ -184,9 +184,8 @@ function submit(endpoint) {
   }
 
   .auth-input {
-    width: 92px;
+    width: 130px;
     padding: 8px 10px;
-    font-size: 0.85rem;
   }
 
   .btn-compact {

@@ -80,6 +80,7 @@ const store = useAppStore();
 .tab-btn {
   flex: 1;
   padding: 12px 16px;
+  min-height: 44px;
   background: transparent;
   border: 1px solid transparent;
   border-bottom: none;

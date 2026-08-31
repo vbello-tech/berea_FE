@@ -3,8 +3,6 @@ import { onMounted } from 'vue';
 import { useAppStore } from './stores/app';
 import AppHeader from './components/AppHeader.vue';
 import SidebarNav from './components/SidebarNav.vue';
-import ScriptureReader from './components/ScriptureReader.vue';
-import StudyPanel from './components/StudyPanel.vue';
 import WordPopover from './components/WordPopover.vue';
 import ToastNotification from './components/ToastNotification.vue';
 
@@ -21,10 +19,7 @@ onMounted(() => {
     <AppHeader />
     <div class="app-container">
       <SidebarNav />
-      <div class="workspace">
-        <ScriptureReader />
-        <StudyPanel />
-      </div>
+      <router-view />
     </div>
     <WordPopover />
     <ToastNotification />
@@ -45,23 +40,11 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.workspace {
-  display: grid;
-  grid-template-columns: 1fr 450px;
-  flex: 1;
-  overflow: hidden;
-}
-
 @media (max-width: 1024px) {
   .app-container {
     height: auto;
     overflow: visible;
     align-items: flex-start;
-  }
-
-  .workspace {
-    grid-template-columns: 1fr;
-    overflow: visible;
   }
 }
 </style>

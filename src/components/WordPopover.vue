@@ -96,15 +96,20 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
 
 .word-popover-close {
   position: absolute;
-  top: 14px;
-  right: 18px;
+  top: 8px;
+  right: 12px;
   background: none;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
   font-size: 1.6rem;
   line-height: 1;
-  padding: 4px;
+  padding: 10px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 1;
 }
 
@@ -116,6 +121,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
   font-family: 'Lora', serif;
   font-size: 2.4rem;
   color: var(--accent-primary);
+  padding-right: 48px;
 }
 
 .word-popover-translit {

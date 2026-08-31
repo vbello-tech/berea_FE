@@ -3,6 +3,7 @@ import { apiFetch } from '../api/client';
 
 let notesSaveTimer = null;
 let toastTimer = null;
+let searchDebounceTimer = null;
 
 export const useAppStore = defineStore('app', {
   state: () => ({
@@ -38,6 +39,17 @@ export const useAppStore = defineStore('app', {
       strongsNumber: null,
       x: 0,
       y: 0,
+    },
+
+    // Search
+    search: {
+      query: '',
+      loading: false,
+      error: null,
+      results: [],
+      fuzzy: false,
+      correctedQuery: null,
+      hasSearched: false,
     },
 
     // Toast
@@ -135,6 +147,67 @@ export const useAppStore = defineStore('app', {
 
     closePopover() {
       this.popover.show = false;
+    },
+
+    // ---------- Search ----------
+    // Called on every keystroke in the search box. Debounces, then defers
+    // to runSearch — kept separate so a component can also trigger an
+    // immediate search (e.g. on Enter) via runSearch directly.
+    queueSearch(query) {
+      this.search.query = query;
+      clearTimeout(searchDebounceTimer);
+      if (!query.trim()) {
+        this.search.results = [];
+        this.search.hasSearched = false;
+        this.search.error = null;
+        return;
+      }
+      searchDebounceTimer = setTimeout(() => this.runSearch(query), 400);
+    },
+
+    // Hits the backend search endpoint. The endpoint is expected to try an
+    // exact/substring match first and, if that comes back empty, fall back
+    // to a fuzzy match server-side (typo tolerance, stemming, etc.) and
+    // report that via `fuzzy` + `corrected_query` in the response — see
+    // the reference Django view for the expected contract.
+    async runSearch(query) {
+      const trimmed = query.trim();
+      if (!trimmed) return;
+
+      this.search.loading = true;
+      this.search.error = null;
+
+      try {
+        const translation = (this.currentPassage && this.currentPassage.translation) || 'KJV';
+        const data = await apiFetch(
+          `/search/?q=${encodeURIComponent(trimmed)}&translation=${translation}`,
+          {},
+          this.authToken
+        );
+        this.search.results = data.results || [];
+        this.search.fuzzy = !!data.fuzzy;
+        this.search.correctedQuery = data.corrected_query || null;
+        this.search.hasSearched = true;
+      } catch (err) {
+        this.search.error = err.message || 'Search failed. Is the API reachable?';
+        this.search.results = [];
+        this.search.hasSearched = true;
+      } finally {
+        this.search.loading = false;
+      }
+    },
+
+    // Loads a search result's passage into the reader. Navigation back to
+    // the reader route is handled by the calling component (SearchView),
+    // keeping the store free of router dependencies.
+    async goToSearchResult(result) {
+      await this.loadPassage({
+        book: result.book,
+        chapter: result.chapter,
+        start: result.verse_number,
+        end: result.verse_number,
+        translation: (this.currentPassage && this.currentPassage.translation) || 'KJV',
+      });
     },
 
     // ---------- Notes ----------

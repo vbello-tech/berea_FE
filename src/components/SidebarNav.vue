@@ -6,28 +6,32 @@ const active = ref('reader');
 
 <template>
   <nav class="sidebar-nav" aria-label="Primary">
-    <button
-      type="button"
-      class="nav-icon focus-ring"
-      :class="{ active: active === 'reader' }"
-      title="Scripture Reader"
-      aria-label="Scripture Reader"
-      :aria-pressed="active === 'reader'"
-      @click="active = 'reader'"
-    >
-      <i class="fa-solid fa-book-open"></i>
-    </button>
-    <button
-      type="button"
-      class="nav-icon focus-ring"
-      :class="{ active: active === 'search' }"
-      title="Search Concordance"
-      aria-label="Search Concordance"
-      :aria-pressed="active === 'search'"
-      @click="active = 'search'"
-    >
-      <i class="fa-solid fa-magnifying-glass"></i>
-    </button>
+    <router-link to="/" custom v-slot="{ navigate, isActive }">
+      <button
+        type="button"
+        class="nav-icon focus-ring"
+        :class="{ active: isActive }"
+        title="Scripture Reader"
+        aria-label="Scripture Reader"
+        :aria-pressed="isActive"
+        @click="navigate"
+      >
+        <i class="fa-solid fa-book-open"></i>
+      </button>
+    </router-link>
+    <router-link to="/search" custom v-slot="{ navigate, isActive }">
+      <button
+        type="button"
+        class="nav-icon focus-ring"
+        :class="{ active: isActive }"
+        title="Search Scripture"
+        aria-label="Search Scripture"
+        :aria-pressed="isActive"
+        @click="navigate"
+      >
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+    </router-link>
     <button
       type="button"
       class="nav-icon focus-ring"
@@ -96,12 +100,12 @@ const active = ref('reader');
 
 @media (max-width: 480px) {
   .sidebar-nav {
-    width: 48px;
+    width: 56px;
   }
 
   .nav-icon {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
   }
 }
 </style>
