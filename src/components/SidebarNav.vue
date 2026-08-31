@@ -85,4 +85,23 @@ const active = ref('reader');
   background-color: var(--bg-card);
   color: var(--accent-primary);
 }
+
+@media (max-width: 1024px) {
+  .sidebar-nav {
+    align-self: flex-start;
+    padding: 12px 0;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar-nav {
+    width: 48px;
+  }
+
+  .nav-icon {
+    width: 36px;
+    height: 36px;
+  }
+}
 </style>

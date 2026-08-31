@@ -4,7 +4,8 @@ A Scripture reading, word-study, and cross-reference app — Vue 3 + Vite fronte
 
 ## Requirements
 
-- Node.js 18+ and npm
+- Node.js `^20.19.0` or `>=22.12.0` (required by Vite 7 — check with `node --version`; if you're on an older Node, install a current LTS via [nvm](https://github.com/nvm-sh/nvm) or nodejs.org first)
+- npm
 - A running instance of the Django backend this frontend was built against (it expects endpoints like `/passage/`, `/strongs/`, `/notes/by_passage/`, `/auth/login/`, `/auth/register/`, `/auth/logout/`)
 
 ## Project structure
@@ -78,4 +79,3 @@ As in the original build, the auth token is kept only in memory (`store.authToke
 - All markup, styling, and behavior were ported 1:1 from the original vanilla-JS build, including the Berea warm gold/wine color system, Cormorant Garamond display type, and the enlarged word-popover text.
 - DOM string-building (`innerHTML`) was replaced with real Vue templates and computed state — functionally equivalent, but each piece (verse text, interlinear rows, cross-ref cards, notes, popover) is now its own component with reactive state instead of manual `document.getElementById` calls.
 - Shared state (auth, current passage, active tab/word, popover, toast) lives in one Pinia store (`src/stores/app.js`) so every component reacts to the same source of truth.
-# berea_FE

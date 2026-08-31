@@ -109,4 +109,26 @@ const store = useAppStore();
   font-size: 1.8rem;
   color: var(--text-muted);
 }
+
+@media (max-width: 560px) {
+  .reader-panel {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .passage-display {
+    padding: 20px;
+  }
+
+  .scripture-content {
+    font-size: 1.2rem;
+    line-height: 1.75;
+  }
+
+  .passage-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
 </style>

@@ -131,7 +131,29 @@ const store = useAppStore();
 
 @media (max-width: 1024px) {
   .study-panel {
-    height: 500px;
+    border-left: none;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .tabs-body {
+    max-height: 55vh;
+  }
+}
+
+@media (max-width: 560px) {
+  .study-header {
+    padding: 16px 16px 0 16px;
+  }
+
+  .tab-btn {
+    padding: 10px 8px;
+    font-size: 0.8rem;
+    gap: 5px;
+  }
+
+  .tabs-body {
+    padding: 12px;
+    max-height: 50vh;
   }
 }
 </style>

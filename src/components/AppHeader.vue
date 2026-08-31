@@ -24,18 +24,16 @@ function submit(endpoint) {
         <input
           v-model="username"
           type="text"
-          class="input-control"
+          class="input-control auth-input"
           placeholder="Username"
-          style="width: 110px"
           autocomplete="username"
           @keydown.enter="submit('login')"
         />
         <input
           v-model="password"
           type="password"
-          class="input-control"
+          class="input-control auth-input"
           placeholder="Password"
-          style="width: 110px"
           autocomplete="current-password"
           @keydown.enter="submit('login')"
         />
@@ -44,7 +42,7 @@ function submit(endpoint) {
       </div>
 
       <div v-else class="auth-loggedin">
-        <span>{{ store.username }}'s Workspace</span>
+        <span class="workspace-label">{{ store.username }}'s Workspace</span>
         <div class="user-avatar">{{ store.username.charAt(0).toUpperCase() }}</div>
         <button type="button" class="btn-fetch btn-compact btn-secondary" @click="store.logout()">Log Out</button>
       </div>
@@ -60,7 +58,10 @@ function submit(endpoint) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 60px;
+  min-height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 150;
 }
 
 .brand {
@@ -72,6 +73,7 @@ function submit(endpoint) {
   font-size: 1.35rem;
   color: var(--text-primary);
   letter-spacing: 0.2px;
+  flex-shrink: 0;
 }
 
 .brand i {
@@ -92,6 +94,8 @@ function submit(endpoint) {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .auth-loggedin {
@@ -109,6 +113,7 @@ function submit(endpoint) {
   color: var(--bg-main);
   font-weight: 600;
   font-size: 0.85rem;
+  flex-shrink: 0;
 }
 
 .input-control {
@@ -127,6 +132,10 @@ function submit(endpoint) {
   border-color: var(--border-focus);
 }
 
+.auth-input {
+  width: 110px;
+}
+
 .btn-fetch {
   background-color: var(--accent-primary);
   color: #1d1811;
@@ -136,6 +145,7 @@ function submit(endpoint) {
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .btn-fetch:hover {
@@ -150,5 +160,42 @@ function submit(endpoint) {
 .btn-secondary {
   background-color: var(--bg-input);
   color: var(--text-primary);
+}
+
+/* Phone: allow the auth row to wrap under the brand rather than overflow */
+@media (max-width: 560px) {
+  .app-header {
+    flex-wrap: wrap;
+    row-gap: 10px;
+    padding: 12px 16px;
+  }
+
+  .user-nav {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+/* Phone: shrink controls and drop non-essential text so everything fits
+   without horizontal scrolling. */
+@media (max-width: 480px) {
+  .brand {
+    font-size: 1.15rem;
+  }
+
+  .auth-input {
+    width: 92px;
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+
+  .btn-compact {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+
+  .workspace-label {
+    display: none;
+  }
 }
 </style>

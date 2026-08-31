@@ -31,6 +31,12 @@ const store = useAppStore();
   pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s ease;
   z-index: 300;
+  max-width: calc(100vw - 32px);
+}
+
+.toast span {
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .toast.show {

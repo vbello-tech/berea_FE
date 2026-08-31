@@ -109,4 +109,11 @@ function onClear() {
 .notes-editor:focus {
   border-color: var(--border-focus);
 }
+
+@media (max-width: 560px) {
+  .notes-section {
+    height: 170px;
+    padding: 12px;
+  }
+}
 </style>

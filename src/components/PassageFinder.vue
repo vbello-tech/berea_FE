@@ -147,4 +147,21 @@ select.input-control {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+@media (max-width: 560px) {
+  .passage-finder {
+    padding: 16px;
+  }
+
+  .controls-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .btn-fetch {
+    grid-column: 1 / -1;
+    justify-content: center;
+    width: 100%;
+  }
+}
 </style>

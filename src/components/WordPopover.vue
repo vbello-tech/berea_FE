@@ -148,4 +148,23 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
   padding-top: 12px;
   border-top: 1px solid var(--border-color);
 }
+
+@media (max-width: 480px) {
+  .word-popover-backdrop {
+    padding: 16px;
+  }
+
+  .word-popover {
+    padding: 22px 20px;
+  }
+
+  .word-popover-original {
+    font-size: 1.9rem;
+  }
+
+  .word-popover-senses,
+  .word-popover-loading {
+    font-size: 1.05rem;
+  }
+}
 </style>

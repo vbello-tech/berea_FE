@@ -53,8 +53,15 @@ onMounted(() => {
 }
 
 @media (max-width: 1024px) {
+  .app-container {
+    height: auto;
+    overflow: visible;
+    align-items: flex-start;
+  }
+
   .workspace {
     grid-template-columns: 1fr;
+    overflow: visible;
   }
 }
 </style>
