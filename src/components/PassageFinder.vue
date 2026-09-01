@@ -34,11 +34,27 @@ function submit() {
       </div>
       <div class="input-group">
         <label for="start-vs">Start Vs</label>
-        <input id="start-vs" v-model.number="form.start" type="number" class="input-control" min="1" required />
+        <input
+          id="start-vs"
+          v-model.number="form.start"
+          type="number"
+          class="input-control"
+          min="1"
+          placeholder="All"
+          title="Leave blank to load the whole chapter"
+        />
       </div>
       <div class="input-group">
         <label for="end-vs">End Vs</label>
-        <input id="end-vs" v-model.number="form.end" type="number" class="input-control" min="1" required />
+        <input
+          id="end-vs"
+          v-model.number="form.end"
+          type="number"
+          class="input-control"
+          min="1"
+          placeholder="All"
+          title="Leave blank to load the whole chapter"
+        />
       </div>
       <div class="input-group">
         <label for="trans-select">Translation</label>

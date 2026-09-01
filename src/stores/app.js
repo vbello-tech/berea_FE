@@ -18,6 +18,10 @@ export const useAppStore = defineStore('app', {
     currentPassage: null, // { book, chapter, start, end, translation }
     verses: [],
     passageLabel: '',
+
+    // Mobile hamburger menu — the trigger lives in AppHeader, the menu
+    // content in SidebarNav; shared here since they're sibling components.
+    mobileMenuOpen: false,
     isLoadingPassage: false,
     passageError: null,
 
@@ -71,6 +75,14 @@ export const useAppStore = defineStore('app', {
   },
 
   actions: {
+    // ---------- Mobile menu ----------
+    toggleMobileMenu() {
+      this.mobileMenuOpen = !this.mobileMenuOpen;
+    },
+    closeMobileMenu() {
+      this.mobileMenuOpen = false;
+    },
+
     // ---------- Toast ----------
     showToast(message, isError = false) {
       this.toast = { show: true, message, isError };
@@ -81,33 +93,55 @@ export const useAppStore = defineStore('app', {
     },
 
     // ---------- Passage loading ----------
+    // start/end are optional — when omitted, the backend returns the
+    // whole chapter. The actual verse range for a whole-chapter response
+    // is derived from what's returned (first/last verse_number), so
+    // currentPassage always has concrete numbers and everything
+    // downstream (notes, popovers, etc.) works unchanged either way.
     async loadPassage({ book, chapter, start, end, translation }) {
-      if (!chapter || !start || start > end) {
-        this.showToast('Please enter a valid chapter and verse range.', true);
+      if (!book || !chapter) {
+        this.showToast('Please choose a book and chapter.', true);
+        return;
+      }
+      if (start && end && Number(start) > Number(end)) {
+        this.showToast('Start verse must come before end verse.', true);
         return;
       }
 
       this.isLoadingPassage = true;
       this.passageError = null;
+      const wholeChapter = !start;
 
       try {
-        const data = await apiFetch(
-          `/passage/?book=${encodeURIComponent(book)}&chapter=${chapter}&start=${start}&end=${end}&translation=${translation}`,
-          {},
-          this.authToken
-        );
+        let url = `/passage/?book=${encodeURIComponent(book)}&chapter=${chapter}&translation=${translation}`;
+        if (start) url += `&start=${start}`;
+        if (end) url += `&end=${end}`;
+
+        const data = await apiFetch(url, {}, this.authToken);
         this.verses = data.results;
-        this.passageLabel = `Current Display: ${book} ${chapter}:${start}-${end} (${translation})`;
-        this.currentPassage = { book, chapter, start, end, translation };
+
+        const firstVerse = data.results[0];
+        const lastVerse = data.results[data.results.length - 1];
+        const actualStart = start || (firstVerse ? firstVerse.verse_number : 1);
+        const actualEnd = end || (lastVerse ? lastVerse.verse_number : actualStart);
+
+        const rangeLabel = wholeChapter
+          ? `${book} ${chapter}`
+          : actualStart === actualEnd
+            ? `${book} ${chapter}:${actualStart}`
+            : `${book} ${chapter}:${actualStart}-${actualEnd}`;
+
+        this.passageLabel = `Current Display: ${rangeLabel} (${translation})`;
+        this.currentPassage = { book, chapter, start: actualStart, end: actualEnd, translation };
         this.activeWord = null;
         this.closePopover();
 
-        this.showToast(`Loaded ${book} ${chapter}:${start}-${end} (${translation})`);
+        this.showToast(`Loaded ${rangeLabel} (${translation})`);
         await this.loadNoteForCurrentPassage();
       } catch (err) {
         this.verses = [];
         this.passageError = {
-          label: `${book} ${chapter}:${start}${end !== start ? '-' + end : ''}`,
+          label: wholeChapter ? `${book} ${chapter}` : `${book} ${chapter}:${start}${end && end !== start ? '-' + end : ''}`,
           message: err.message,
         };
         this.showToast(err.message || 'Could not reach the API. Is the Django server running?', true);
@@ -284,7 +318,7 @@ export const useAppStore = defineStore('app', {
     async handleAuth(endpoint, username, password) {
       if (!username || !password) {
         this.showToast('Enter a username and password.', true);
-        return;
+        return false;
       }
       try {
         const data = await apiFetch(`/auth/${endpoint}/`, {
@@ -295,8 +329,10 @@ export const useAppStore = defineStore('app', {
         this.username = data.username;
         this.showToast(endpoint === 'register' ? `Welcome, ${data.username}!` : `Logged in as ${data.username}`);
         await this.loadNoteForCurrentPassage();
+        return true;
       } catch (err) {
         this.showToast(err.message || 'Authentication failed.', true);
+        return false;
       }
     },
 

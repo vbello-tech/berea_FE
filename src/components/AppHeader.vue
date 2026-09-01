@@ -1,44 +1,25 @@
 <script setup>
-import { ref } from 'vue';
 import { useAppStore } from '../stores/app';
 
 const store = useAppStore();
-const username = ref('');
-const password = ref('');
-
-function submit(endpoint) {
-  store.handleAuth(endpoint, username.value.trim(), password.value);
-  password.value = '';
-}
 </script>
 
 <template>
   <header class="app-header">
-    <div class="brand">
-      <i class="fa-solid fa-book-bible"></i>
-      <span>Berea</span>
+    <div class="header-left">
+      <button type="button" class="hamburger focus-ring" aria-label="Open menu" @click="store.toggleMobileMenu()">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="brand">
+        <i class="fa-solid fa-book-bible"></i>
+        <span>Berea</span>
+      </div>
     </div>
 
     <div class="user-nav">
-      <div v-if="!store.isLoggedIn" class="auth-controls">
-        <input
-          v-model="username"
-          type="text"
-          class="input-control auth-input"
-          placeholder="Username"
-          autocomplete="username"
-          @keydown.enter="submit('login')"
-        />
-        <input
-          v-model="password"
-          type="password"
-          class="input-control auth-input"
-          placeholder="Password"
-          autocomplete="current-password"
-          @keydown.enter="submit('login')"
-        />
-        <button type="button" class="btn-fetch btn-compact" @click="submit('login')">Log In</button>
-        <button type="button" class="btn-fetch btn-compact btn-secondary" @click="submit('register')">Sign Up</button>
+      <div v-if="!store.isLoggedIn" class="auth-links">
+        <router-link to="/login" class="btn-fetch btn-compact btn-secondary">Log In</router-link>
+        <router-link to="/register" class="btn-fetch btn-compact">Sign Up</router-link>
       </div>
 
       <div v-else class="auth-loggedin">
@@ -62,6 +43,16 @@ function submit(endpoint) {
   position: sticky;
   top: 0;
   z-index: 150;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hamburger {
+  display: none;
 }
 
 .brand {
@@ -89,13 +80,11 @@ function submit(endpoint) {
   color: var(--text-secondary);
 }
 
-.auth-controls,
+.auth-links,
 .auth-loggedin {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
 }
 
 .auth-loggedin {
@@ -116,26 +105,6 @@ function submit(endpoint) {
   flex-shrink: 0;
 }
 
-.input-control {
-  background-color: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  padding: 10px 12px;
-  font-size: 0.95rem;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-.input-control:focus {
-  border-color: var(--border-focus);
-}
-
-.auth-input {
-  width: 110px;
-}
-
 .btn-fetch {
   background-color: var(--accent-primary);
   color: #1d1811;
@@ -146,6 +115,9 @@ function submit(endpoint) {
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 
 .btn-fetch:hover {
@@ -162,30 +134,29 @@ function submit(endpoint) {
   color: var(--text-primary);
 }
 
-/* Phone: allow the auth row to wrap under the brand rather than overflow */
-@media (max-width: 560px) {
-  .app-header {
-    flex-wrap: wrap;
-    row-gap: 10px;
-    padding: 12px 16px;
+@media (max-width: 1024px) {
+  .hamburger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    border-radius: var(--radius-md);
   }
 
-  .user-nav {
-    width: 100%;
-    justify-content: flex-end;
+  .hamburger:hover {
+    background-color: var(--bg-card);
   }
 }
 
-/* Phone: shrink controls and drop non-essential text so everything fits
-   without horizontal scrolling. */
 @media (max-width: 480px) {
   .brand {
     font-size: 1.15rem;
-  }
-
-  .auth-input {
-    width: 130px;
-    padding: 8px 10px;
   }
 
   .btn-compact {
