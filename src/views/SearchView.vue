@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAppStore } from '../stores/app';
+import { BOOKS } from '../constants/books';
 
 const store = useAppStore();
 const router = useRouter();
@@ -19,17 +20,22 @@ function onSubmit() {
   store.runSearch(store.search.query);
 }
 
+function clearSearch() {
+  store.search.query = '';
+  store.queueSearch('');
+}
+
 async function selectResult(result) {
   await store.goToSearchResult(result);
   router.push('/');
 }
 
-// Splits a verse's text around whatever term actually matched (the
-// corrected/fuzzy term when the search fell back to one) so it can be
-// highlighted, case-insensitively, without touching the original casing.
+// Highlights whichever of the query's words literally appear in a result's
+// text. The backend ranks by relevance (score), not just exact substrings,
+// so a result can match without containing every query word — this only
+// highlights the ones that do appear, case-insensitively.
 function highlightTokens(text) {
-  const term = (store.search.fuzzy && store.search.correctedQuery) || store.search.query;
-  const words = (term || '')
+  const words = (store.search.query || '')
     .trim()
     .split(/\s+/)
     .filter(Boolean)
@@ -45,9 +51,22 @@ function highlightTokens(text) {
     .map((p) => ({ text: p, match: exactRe.test(p) }));
 }
 
+function scorePercent(score) {
+  return Math.round((score || 0) * 100);
+}
+
 const resultCountLabel = computed(() => {
-  const n = store.search.results.length;
+  const n = store.search.count;
   return n === 1 ? '1 result' : `${n} results`;
+});
+
+// The backend ranks by relevance rather than requiring an exact match, so
+// a query with a typo or the "wrong" word still returns something — this
+// just tells the person when what they got isn't a perfect match, based on
+// the top result's own score rather than a separate fuzzy flag.
+const isApproximate = computed(() => {
+  const top = store.search.results[0];
+  return !!top && top.score < 0.999;
 });
 </script>
 
@@ -69,9 +88,29 @@ const resultCountLabel = computed(() => {
         @input="onInput"
         @keydown.enter="onSubmit"
       />
-      <button v-if="store.search.query" class="search-clear" aria-label="Clear search" @click="store.queueSearch(''); store.search.query = ''">
+      <button v-if="store.search.query" class="search-clear" aria-label="Clear search" @click="clearSearch">
         &times;
       </button>
+    </div>
+
+    <div class="search-filters">
+      <select
+        class="filter-select"
+        :value="store.search.testament"
+        @change="store.setSearchTestament($event.target.value)"
+      >
+        <option value="">Whole Bible</option>
+        <option value="OT">Old Testament</option>
+        <option value="NT">New Testament</option>
+      </select>
+      <select
+        class="filter-select"
+        :value="store.search.book"
+        @change="store.setSearchBook($event.target.value)"
+      >
+        <option value="">All Books</option>
+        <option v-for="b in BOOKS" :key="b" :value="b">{{ b }}</option>
+      </select>
     </div>
 
     <div class="search-results">
@@ -89,9 +128,8 @@ const resultCountLabel = computed(() => {
         </div>
 
         <template v-else>
-          <div v-if="store.search.fuzzy" class="fuzzy-note">
-            No exact match for "{{ store.search.query }}" — showing results for
-            <strong>"{{ store.search.correctedQuery }}"</strong> instead.
+          <div v-if="isApproximate" class="fuzzy-note">
+            No exact match for "{{ store.search.query }}" — showing the closest verses instead, ranked by relevance.
           </div>
           <div class="result-count">{{ resultCountLabel }}</div>
 
@@ -102,7 +140,10 @@ const resultCountLabel = computed(() => {
             class="result-card"
             @click="selectResult(r)"
           >
-            <div class="result-ref">{{ r.book }} {{ r.chapter }}:{{ r.verse_number }}</div>
+            <div class="result-header">
+              <span class="result-ref">{{ r.book }} {{ r.chapter }}:{{ r.verse_number }}</span>
+              <span class="result-score" :class="{ weak: r.score < 0.6 }">{{ scorePercent(r.score) }}% match</span>
+            </div>
             <div class="result-text">
               <template v-for="(tok, ti) in highlightTokens(r.text)" :key="ti">
                 <mark v-if="tok.match">{{ tok.text }}</mark>
@@ -184,6 +225,28 @@ const resultCountLabel = computed(() => {
   color: var(--text-primary);
 }
 
+.search-filters {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-select {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.filter-select:focus {
+  border-color: var(--border-focus);
+}
+
 .search-results {
   background-color: var(--bg-panel);
   border: 1px solid var(--border-color);
@@ -214,10 +277,6 @@ const resultCountLabel = computed(() => {
   border-radius: var(--radius-sm);
 }
 
-.fuzzy-note strong {
-  color: var(--accent-primary);
-}
-
 .result-count {
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -246,11 +305,29 @@ const resultCountLabel = computed(() => {
   transform: translateX(2px);
 }
 
+.result-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
 .result-ref {
   font-weight: 700;
   color: var(--accent-primary);
   font-size: 0.85rem;
-  margin-bottom: 4px;
+}
+
+.result-score {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-family: monospace;
+  flex-shrink: 0;
+}
+
+.result-score.weak {
+  color: var(--accent-secondary);
 }
 
 .result-text {
@@ -280,6 +357,15 @@ const resultCountLabel = computed(() => {
 
   .search-input {
     font-size: 1rem;
+  }
+
+  .search-filters {
+    flex-wrap: wrap;
+  }
+
+  .filter-select {
+    flex: 1;
+    min-width: 130px;
   }
 }
 </style>

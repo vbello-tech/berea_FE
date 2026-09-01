@@ -44,11 +44,12 @@ export const useAppStore = defineStore('app', {
     // Search
     search: {
       query: '',
+      book: '',       // '' = all books
+      testament: '',  // '' = all, else 'OT' | 'NT'
       loading: false,
       error: null,
       results: [],
-      fuzzy: false,
-      correctedQuery: null,
+      count: 0,
       hasSearched: false,
     },
 
@@ -158,6 +159,7 @@ export const useAppStore = defineStore('app', {
       clearTimeout(searchDebounceTimer);
       if (!query.trim()) {
         this.search.results = [];
+        this.search.count = 0;
         this.search.hasSearched = false;
         this.search.error = null;
         return;
@@ -165,11 +167,15 @@ export const useAppStore = defineStore('app', {
       searchDebounceTimer = setTimeout(() => this.runSearch(query), 400);
     },
 
-    // Hits the backend search endpoint. The endpoint is expected to try an
-    // exact/substring match first and, if that comes back empty, fall back
-    // to a fuzzy match server-side (typo tolerance, stemming, etc.) and
-    // report that via `fuzzy` + `corrected_query` in the response — see
-    // the reference Django view for the expected contract.
+    // Hits GET /search/?q=<query>&translation=<t>&limit=<n>, optionally
+    // &book=<book>&testament=<OT|NT>. book/testament are only appended when
+    // set — the API 400s on an invalid value for either, and an empty
+    // string isn't a valid book or testament. The backend does its own
+    // relevance-ranked matching (word/phrase overlap, not just an exact
+    // substring) and returns each result with a 0–1 `score` — that's how
+    // near-misses ("doesn't get the exact word") are handled: a query that
+    // doesn't exactly appear anywhere still returns the closest verses,
+    // ranked, rather than nothing.
     async runSearch(query) {
       const trimmed = query.trim();
       if (!trimmed) return;
@@ -179,22 +185,34 @@ export const useAppStore = defineStore('app', {
 
       try {
         const translation = (this.currentPassage && this.currentPassage.translation) || 'KJV';
-        const data = await apiFetch(
-          `/search/?q=${encodeURIComponent(trimmed)}&translation=${translation}`,
-          {},
-          this.authToken
-        );
+        let url = `/search/?q=${encodeURIComponent(trimmed)}&translation=${translation}&limit=20`;
+        if (this.search.book) url += `&book=${encodeURIComponent(this.search.book)}`;
+        if (this.search.testament) url += `&testament=${encodeURIComponent(this.search.testament)}`;
+
+        const data = await apiFetch(url, {}, this.authToken);
         this.search.results = data.results || [];
-        this.search.fuzzy = !!data.fuzzy;
-        this.search.correctedQuery = data.corrected_query || null;
+        this.search.count = data.count ?? this.search.results.length;
         this.search.hasSearched = true;
       } catch (err) {
         this.search.error = err.message || 'Search failed. Is the API reachable?';
         this.search.results = [];
+        this.search.count = 0;
         this.search.hasSearched = true;
       } finally {
         this.search.loading = false;
       }
+    },
+
+    // Updates the book/testament filter and re-runs the current search (if
+    // there is one) so results reflect the new filter immediately.
+    setSearchBook(book) {
+      this.search.book = book;
+      if (this.search.query.trim()) this.runSearch(this.search.query);
+    },
+
+    setSearchTestament(testament) {
+      this.search.testament = testament;
+      if (this.search.query.trim()) this.runSearch(this.search.query);
     },
 
     // Loads a search result's passage into the reader. Navigation back to
