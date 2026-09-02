@@ -45,6 +45,18 @@ export const useAppStore = defineStore('app', {
       y: 0,
     },
 
+    // Cross-reference verse preview modal — shows the actual verse text
+    // for a cross-reference (curated or bulk), fetched via /passage/
+    // rather than relying on inline text, so it works for bulk refs too
+    // (which only carry a reference_label, no text).
+    versePreview: {
+      show: false,
+      loading: false,
+      error: null,
+      reference: '',
+      verses: [],
+    },
+
     // Search
     search: {
       query: '',
@@ -182,6 +194,49 @@ export const useAppStore = defineStore('app', {
 
     closePopover() {
       this.popover.show = false;
+    },
+
+    // ---------- Cross-reference verse preview ----------
+    // Parses a standard "Book Chapter:Verse" or "Book Chapter:Verse-Verse"
+    // label (book names with spaces, like "1 Corinthians" or "Song Of
+    // Solomon", are handled since the book portion is matched greedily up
+    // to the last space-separated chapter:verse group).
+    parseReferenceLabel(label) {
+      const match = (label || '').trim().match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?$/);
+      if (!match) return null;
+      const [, book, chapter, start, end] = match;
+      return {
+        book: book.trim(),
+        chapter: Number(chapter),
+        start: Number(start),
+        end: end ? Number(end) : Number(start),
+      };
+    },
+
+    async openVersePreview(referenceLabel) {
+      this.versePreview = { show: true, loading: true, error: null, reference: referenceLabel, verses: [] };
+
+      const parsed = this.parseReferenceLabel(referenceLabel);
+      if (!parsed) {
+        this.versePreview.loading = false;
+        this.versePreview.error = `Couldn't parse "${referenceLabel}".`;
+        return;
+      }
+
+      try {
+        const translation = (this.currentPassage && this.currentPassage.translation) || 'KJV';
+        const url = `/passage/?book=${encodeURIComponent(parsed.book)}&chapter=${parsed.chapter}&start=${parsed.start}&end=${parsed.end}&translation=${translation}`;
+        const data = await apiFetch(url, {}, this.authToken);
+        this.versePreview.verses = data.results || [];
+        this.versePreview.loading = false;
+      } catch (err) {
+        this.versePreview.loading = false;
+        this.versePreview.error = err.message || `Could not load ${referenceLabel}.`;
+      }
+    },
+
+    closeVersePreview() {
+      this.versePreview.show = false;
     },
 
     // ---------- Search ----------

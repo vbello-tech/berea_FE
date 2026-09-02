@@ -4,6 +4,7 @@ import { useAppStore } from './stores/app';
 import AppHeader from './components/AppHeader.vue';
 import SidebarNav from './components/SidebarNav.vue';
 import WordPopover from './components/WordPopover.vue';
+import VersePreviewModal from './components/VersePreviewModal.vue';
 import ToastNotification from './components/ToastNotification.vue';
 
 const store = useAppStore();
@@ -22,6 +23,7 @@ onMounted(() => {
       <router-view />
     </div>
     <WordPopover />
+    <VersePreviewModal />
     <ToastNotification />
   </div>
 </template>

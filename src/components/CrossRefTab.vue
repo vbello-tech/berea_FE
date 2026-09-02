@@ -1,5 +1,4 @@
 <script setup>
-import { computed } from 'vue';
 import { useAppStore } from '../stores/app';
 import VerseAccordion from './VerseAccordion.vue';
 
@@ -19,7 +18,12 @@ function hasAny(v) {
     <div class="cross-ref-list">
       <template v-for="v in store.verses" :key="v.verse_number">
         <VerseAccordion v-if="hasAny(v)" :verse-number="v.verse_number">
-          <div v-for="(r, i) in v.cross_references || []" :key="'curated-' + i" class="cross-ref-card">
+          <div
+            v-for="(r, i) in v.cross_references || []"
+            :key="'curated-' + i"
+            class="cross-ref-card"
+            @click="store.openVersePreview(r.reference_label)"
+          >
             <div class="cross-ref-header">
               <span class="cross-ref-ref">{{ r.reference_label }}</span>
               <span class="cross-ref-tag">{{ r.tag }}</span>
@@ -29,7 +33,12 @@ function hasAny(v) {
 
           <template v-if="bulkSorted(v).length > 0">
             <div class="bulk-xref-heading">More cross-references (by relevance)</div>
-            <div v-for="(l, i) in bulkSorted(v)" :key="'bulk-' + i" class="bulk-xref-row">
+            <div
+              v-for="(l, i) in bulkSorted(v)"
+              :key="'bulk-' + i"
+              class="bulk-xref-row"
+              @click="store.openVersePreview(l.reference_label)"
+            >
               <span class="bulk-xref-ref">{{ l.reference_label }}</span>
               <span class="bulk-xref-votes" :class="{ negative: l.votes < 0 }">{{ l.votes }} votes</span>
             </div>
