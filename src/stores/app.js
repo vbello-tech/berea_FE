@@ -274,7 +274,7 @@ export const useAppStore = defineStore('app', {
 
       try {
         const translation = (this.currentPassage && this.currentPassage.translation) || 'KJV';
-        let url = `/search/?q=${encodeURIComponent(trimmed)}&translation=${translation}&limit=20`;
+        let url = `/search/?q=${encodeURIComponent(trimmed)}&translation=${translation}&limit=30`;
         if (this.search.book) url += `&book=${encodeURIComponent(this.search.book)}`;
         if (this.search.testament) url += `&testament=${encodeURIComponent(this.search.testament)}`;
 
