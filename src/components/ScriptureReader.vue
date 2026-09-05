@@ -40,6 +40,7 @@ const store = useAppStore();
 .reader-panel {
   padding: 24px 32px;
   overflow-y: auto;
+  overflow-anchor: none;
   display: flex;
   flex-direction: column;
   gap: 24px;

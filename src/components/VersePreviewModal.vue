@@ -49,7 +49,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
   align-items: center;
   justify-content: center;
   padding: 24px;
-  z-index: 200;
+  z-index: 400;
 }
 
 .verse-preview {

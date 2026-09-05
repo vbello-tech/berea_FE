@@ -32,14 +32,40 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
     <!-- Mobile only: two floating buttons: instead of scrolling down to
          reach Interlinear/Cross Ref, tapping one opens that tab directly
          in a drawer that slides in from the right. -->
-    <button type="button" class="tab-fab crossref focus-ring" aria-label="Open Cross References" @click="openTab('crossref')">
-      <i class="fa-solid fa-diagram-project"></i>
+    <div class="tab-fab-wrap crossref">
+      <svg
+        class="tab-fab-hit focus-ring"
+        viewBox="0 0 56 56"
+        role="button"
+        tabindex="0"
+        aria-label="Open Cross References"
+        @click="openTab('crossref')"
+        @keydown.enter="openTab('crossref')"
+        @mousedown.prevent
+        @touchstart.prevent
+      >
+        <circle class="fab-circle" cx="28" cy="28" r="28" />
+      </svg>
+      <i class="fa-solid fa-diagram-project tab-fab-icon" aria-hidden="true"></i>
       <span v-if="store.crossRefCount" class="fab-badge">{{ store.crossRefCount }}</span>
-    </button>
-    <button type="button" class="tab-fab interlinear focus-ring" aria-label="Open Interlinear" @click="openTab('interlinear')">
-      <i class="fa-solid fa-language"></i>
+    </div>
+    <div class="tab-fab-wrap interlinear">
+      <svg
+        class="tab-fab-hit focus-ring"
+        viewBox="0 0 56 56"
+        role="button"
+        tabindex="0"
+        aria-label="Open Interlinear"
+        @click="openTab('interlinear')"
+        @keydown.enter="openTab('interlinear')"
+        @mousedown.prevent
+        @touchstart.prevent
+      >
+        <circle class="fab-circle" cx="28" cy="28" r="28" />
+      </svg>
+      <i class="fa-solid fa-language tab-fab-icon" aria-hidden="true"></i>
       <span v-if="store.interlinearCount" class="fab-badge">{{ store.interlinearCount }}</span>
-    </button>
+    </div>
 
     <div v-if="drawerOpen" class="drawer-backdrop" @click="drawerOpen = false"></div>
 
@@ -172,6 +198,13 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
 .tabs-body {
   flex: 1;
   overflow-y: auto;
+  /* Clicking a row changes the `active` class on every row simultaneously
+     (isActiveRow re-evaluates for the whole list). Chrome/Firefox's CSS
+     scroll-anchoring can misfire on that kind of synchronized style burst
+     while scrolled down, snapping scrollTop back to 0. This list doesn't
+     need anchoring (nothing above the fold changes height), so turning it
+     off removes the misfire entirely rather than fighting it. */
+  overflow-anchor: none;
   background-color: var(--bg-card);
   padding: 16px;
   display: flex;
@@ -180,7 +213,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
 
 /* Floating trigger buttons: desktop-hidden, since the panel is already
    visible inline there. */
-.tab-fab {
+.tab-fab-wrap {
   display: none;
 }
 
@@ -249,35 +282,59 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
     z-index: 210;
   }
 
-  .tab-fab {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  /* The wrapper owns the fixed position only. pointer-events: none here
+     is essential - it lets clicks in the square's corners (outside the
+     visual circle) fall through to whatever's scrolled underneath. */
+  .tab-fab-wrap {
+    display: block;
     position: fixed;
     right: 16px;
     width: 56px;
     height: 56px;
-    border-radius: 50%;
-    background-color: var(--accent-primary);
-    color: #1d1811;
-    border: none;
-    font-size: 1.3rem;
-    cursor: pointer;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
     z-index: 190;
-    transition: transform 0.15s ease;
+    pointer-events: none;
   }
 
-  .tab-fab:active {
-    transform: scale(0.94);
-  }
-
-  .tab-fab.crossref {
+  .tab-fab-wrap.crossref {
     bottom: 100px;
   }
 
-  .tab-fab.interlinear {
+  .tab-fab-wrap.interlinear {
     bottom: 32px;
+  }
+
+  /* The actual click target: an SVG circle. Unlike an HTML element
+     clipped with CSS clip-path (which Safari has historically not
+     honored for hit-testing, only for painting - the exact bug that
+     shipped here first), SVG shapes have always hit-tested against their
+     real filled geometry in every browser. This is what fixes the dead
+     corners for good, reliably. */
+  .tab-fab-hit {
+    width: 100%;
+    height: 100%;
+    pointer-events: auto;
+    cursor: pointer;
+    filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.4));
+  }
+
+  .fab-circle {
+    fill: var(--accent-primary);
+    transition: transform 0.15s ease;
+    transform-origin: 28px 28px;
+  }
+
+  .tab-fab-hit:active .fab-circle {
+    transform: scale(0.94);
+  }
+
+  .tab-fab-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #1d1811;
+    font-size: 1.3rem;
+    pointer-events: none;
   }
 
   .fab-badge {
@@ -291,6 +348,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
     padding: 1px 5px;
     border-radius: 10px;
     min-width: 16px;
+    pointer-events: none;
   }
 }
 
