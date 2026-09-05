@@ -1,18 +1,9 @@
 <script setup>
-import { onMounted } from 'vue';
-import { useAppStore } from './stores/app';
 import AppHeader from './components/AppHeader.vue';
 import SidebarNav from './components/SidebarNav.vue';
 import WordPopover from './components/WordPopover.vue';
 import VersePreviewModal from './components/VersePreviewModal.vue';
 import ToastNotification from './components/ToastNotification.vue';
-
-const store = useAppStore();
-
-// Mirrors the original's initial load: John 3:16-17 (KJV) on first paint.
-onMounted(() => {
-  store.loadPassage({ book: 'John', chapter: 3, start: 16, end: 17, translation: 'KJV' });
-});
 </script>
 
 <template>

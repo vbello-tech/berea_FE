@@ -138,3 +138,5 @@ function onRowClick(event, verseNumber, tag) {
   font-size: 0.75rem;
 }
 </style>
+
+

@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { reactive, ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { useAppStore } from '../stores/app';
 import { BOOKS } from '../constants/books';
 
@@ -7,11 +7,23 @@ const store = useAppStore();
 
 const form = reactive({
   book: 'John',
-  chapter: 3,
-  start: 16,
-  end: 17,
+  chapter: 1,
+  start: '',
+  end: '',
   translation: 'KJV',
 });
+
+// Changing the book or chapter invalidates whatever verse range was set
+// for the previous passage - blank means "load the whole chapter" (see
+// store.loadPassage), which is the sensible default when you've just
+// jumped somewhere new.
+watch(
+  () => [form.book, form.chapter],
+  () => {
+    form.start = '';
+    form.end = '';
+  }
+);
 
 // --- Book combobox state ---------------------------------------------------
 
@@ -85,8 +97,14 @@ function scrollActiveIntoView() {
   el?.scrollIntoView({ block: 'nearest' });
 }
 
+// FIX: only close (and refocus) the trigger when the dropdown is actually
+// open. Without the `isOpen.value &&` guard, this fired on every mousedown
+// anywhere on the page - clicking an interlinear row, a cross-reference,
+// the notes box, anything - and unconditionally called triggerEl.focus(),
+// which made the browser scroll the button into view. That's what was
+// causing the whole page to snap back to the top on unrelated clicks.
 function onClickOutside(e) {
-  if (rootEl.value && !rootEl.value.contains(e.target)) closeList();
+  if (isOpen.value && rootEl.value && !rootEl.value.contains(e.target)) closeList();
 }
 
 onMounted(() => document.addEventListener('mousedown', onClickOutside));
@@ -375,4 +393,3 @@ select.input-control {
   }
 }
 </style>
-

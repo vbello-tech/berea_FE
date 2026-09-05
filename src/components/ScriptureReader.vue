@@ -21,6 +21,11 @@ const store = useAppStore();
         <div style="font-size: 0.8rem">{{ store.passageError.message }}</div>
       </div>
 
+      <div v-else-if="store.verses.length === 0 && !store.isLoadingPassage" class="empty-state">
+        <i class="fa-solid fa-book-bible"></i>
+        <div>Choose a book and chapter above, then press Load.</div>
+      </div>
+
       <div v-else class="scripture-content">
         <template v-for="(v, i) in store.verses" :key="v.verse_number">
           <VerseText :verse="v" />
