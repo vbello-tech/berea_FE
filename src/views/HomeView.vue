@@ -14,13 +14,16 @@ import StudyPanel from '../components/StudyPanel.vue';
 .workspace {
   display: grid;
   grid-template-columns: 1fr 450px;
+  grid-template-rows: minmax(0, 1fr);
   flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
 @media (max-width: 1024px) {
   .workspace {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
     overflow: visible;
   }
 }

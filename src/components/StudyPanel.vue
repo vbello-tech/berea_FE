@@ -41,8 +41,6 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
         aria-label="Open Cross References"
         @click="openTab('crossref')"
         @keydown.enter="openTab('crossref')"
-        @mousedown.prevent
-        @touchstart.prevent
       >
         <circle class="fab-circle" cx="28" cy="28" r="28" />
       </svg>
@@ -58,8 +56,6 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
         aria-label="Open Interlinear"
         @click="openTab('interlinear')"
         @keydown.enter="openTab('interlinear')"
-        @mousedown.prevent
-        @touchstart.prevent
       >
         <circle class="fab-circle" cx="28" cy="28" r="28" />
       </svg>
@@ -116,6 +112,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
   border-left: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -197,7 +194,9 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
 
 .tabs-body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   /* Clicking a row changes the `active` class on every row simultaneously
      (isActiveRow re-evaluates for the whole list). Chrome/Firefox's CSS
      scroll-anchoring can misfire on that kind of synchronized style burst

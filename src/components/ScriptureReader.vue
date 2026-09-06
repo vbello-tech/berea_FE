@@ -46,6 +46,8 @@ const store = useAppStore();
   padding: 24px 32px;
   overflow-y: auto;
   overflow-anchor: none;
+  overscroll-behavior: contain;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 24px;

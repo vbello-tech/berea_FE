@@ -50,7 +50,7 @@ function onClear() {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  height: 220px;
+  height: 120px;
 }
 
 .notes-header {

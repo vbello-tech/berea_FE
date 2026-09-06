@@ -7,18 +7,27 @@ const store = useAppStore();
 
 const form = reactive({
   book: 'John',
-  chapter: 1,
+  chapter: 3,
   start: '',
   end: '',
   translation: 'KJV',
 });
 
-// Changing the book or chapter invalidates whatever verse range was set
-// for the previous passage - blank means "load the whole chapter" (see
-// store.loadPassage), which is the sensible default when you've just
-// jumped somewhere new.
+// Changing the book invalidates the chapter (and verse range) entirely -
+// a chapter number from one book means nothing in another. Changing the
+// chapter alone still invalidates the verse range. Blank means "load the
+// whole chapter" (see store.loadPassage) once a chapter is chosen again.
 watch(
-  () => [form.book, form.chapter],
+  () => form.book,
+  () => {
+    form.chapter = '';
+    form.start = '';
+    form.end = '';
+  }
+);
+
+watch(
+  () => form.chapter,
   () => {
     form.start = '';
     form.end = '';

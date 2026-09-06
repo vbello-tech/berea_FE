@@ -23,17 +23,23 @@ import ToastNotification from './components/ToastNotification.vue';
 .app-shell {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .app-container {
   display: flex;
   flex: 1;
-  height: calc(100vh - 60px);
+  min-height: 0;
   overflow: hidden;
 }
 
 @media (max-width: 1024px) {
+  .app-shell {
+    height: auto;
+    overflow: visible;
+  }
+
   .app-container {
     height: auto;
     overflow: visible;
