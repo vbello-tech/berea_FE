@@ -115,6 +115,7 @@ function scrollActiveIntoView() {
 
 const TRANSLATIONS = [
   { code: 'KJV', name: 'King James Version' },
+  { code: 'ASV', name: 'American Standard Version' },
   { code: 'BSB', name: 'Berean Standard Bible' },
 ];
 
