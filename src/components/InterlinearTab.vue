@@ -4,6 +4,64 @@ import VerseAccordion from './VerseAccordion.vue';
 
 const store = useAppStore();
 
+// word_tags is the ONLY interlinear data source, and it's identical no
+// matter which Bible translation the user has open -- the API
+// (VerseSerializer.get_word_tags) always sources it from STEPBible's
+// original-language tagging via the matching BSB verse, with no
+// per-translation filtering. Switching translations in the reader does
+// not change what shows here.
+//
+// A word tagged with a compound Strong's field (e.g. "H0853/H01254" --
+// an untranslated object marker folded onto the nearest content word,
+// see Gen.1.1#03) arrives from the API as one object with
+// strongs_number as a list (see serializers.py's
+// _group_tags_by_position), so no client-side merging/deduping is
+// needed here.
+//
+// NOTE: word_tags always follows ORIGINAL Hebrew/Greek word order, never
+// any translation's English reading order -- this is true for every
+// translation now, including KJV.
+function tagsForVerse(v) {
+  return (v.word_tags || []).map((t) => ({
+    uid: `w-${t.position}`,
+    position: t.position,
+    mainWord: t.original_word,
+    transliteration: t.transliteration,
+    gloss: t.gloss,
+    strongsNumbers: t.strongs_number, // array, e.g. ["H0853", "H1254"]
+    morphology: t.morphology,
+  }));
+}
+
+// --- was ---
+// function tagsForVerse(v) {
+//   if (v.translation === 'KJV' && (v.kjv_strongs_tags || []).length > 0) {
+//     return v.kjv_strongs_tags.map((t) => {
+//       const hasOriginal = !!t.original_word;
+//       return {
+//         uid: `k-${t.position}`,
+//         position: t.position,
+//         mainWord: hasOriginal ? t.original_word : t.surface_word,
+//         transliteration: t.transliteration,
+//         gloss: hasOriginal ? t.surface_word : '',
+//         strongsNumbers: t.strongs_number,
+//         morphology: t.morphology,
+//         isOriginal: hasOriginal,
+//       };
+//     });
+//   }
+//   return (v.word_tags || []).map((t) => ({
+//     uid: `w-${t.position}`,
+//     position: t.position,
+//     mainWord: t.original_word,
+//     transliteration: t.transliteration,
+//     gloss: t.gloss,
+//     strongsNumbers: t.strongs_number,
+//     morphology: t.morphology,
+//     isOriginal: true,
+//   }));
+// }
+
 function isActiveRow(verseNumber, position) {
   if (!store.activeWord) return false;
   return (
@@ -14,7 +72,13 @@ function isActiveRow(verseNumber, position) {
 
 function onRowClick(event, verseNumber, tag) {
   store.setActiveWord(verseNumber, tag.position);
-  store.openPopover(tag.strongs_number);
+  store.openPopover(tag.strongsNumbers[0]);
+}
+
+function onBadgeClick(event, verseNumber, tag, strongsNumber) {
+  event.stopPropagation();
+  store.setActiveWord(verseNumber, tag.position);
+  store.openPopover(strongsNumber);
 }
 </script>
 
@@ -28,26 +92,34 @@ function onRowClick(event, verseNumber, tag) {
       }}
     </div>
     <div v-else class="interlinear-note">
-      Real word-by-word tagging, in original Greek/Hebrew word order (not English word order).
+      Real word-by-word tagging of the original Greek/Hebrew, in original word order (not English word order).
+      This stays the same no matter which translation you're reading.
       Click a verse to reveal its words, then click any word for its full lexicon entry.
     </div>
 
     <div class="interlinear-list">
       <template v-for="v in store.verses" :key="v.verse_number">
-        <VerseAccordion v-if="(v.word_tags || []).length > 0" :verse-number="v.verse_number">
+        <VerseAccordion v-if="tagsForVerse(v).length > 0" :verse-number="v.verse_number">
           <div
-            v-for="t in v.word_tags"
-            :key="t.position"
+            v-for="t in tagsForVerse(v)"
+            :key="t.uid"
             class="interlinear-row"
             :class="{ active: isActiveRow(v.verse_number, t.position) }"
             @click="onRowClick($event, v.verse_number, t)"
           >
             <span class="interlinear-pos">{{ t.position }}</span>
-            <span class="interlinear-original">{{ t.original_word }}</span>
-            <span class="interlinear-translit">{{ t.transliteration || '' }}</span>
-            <span class="interlinear-gloss">{{ t.gloss || '' }}</span>
-            <span class="strongs-badge">{{ t.strongs_number }}</span>
-            <span class="interlinear-morph">{{ t.morphology || '' }}</span>
+            <span class="interlinear-original">{{ t.mainWord }}</span>
+            <span class="interlinear-translit">{{ t.transliteration }}</span>
+            <span class="interlinear-gloss">{{ t.gloss }}</span>
+            <span class="strongs-badges">
+              <span
+                v-for="s in t.strongsNumbers"
+                :key="s"
+                class="strongs-badge"
+                @click="onBadgeClick($event, v.verse_number, t, s)"
+              >{{ s }}</span>
+            </span>
+            <span class="interlinear-morph">{{ t.morphology }}</span>
           </div>
         </VerseAccordion>
       </template>
@@ -110,6 +182,17 @@ function onRowClick(event, verseNumber, tag) {
   min-width: 70px;
 }
 
+/* --- was: KJV surface-word rows showed plain English, needing a
+   non-serif style variant (.is-surface). mainWord is always the
+   original-language script now, for every translation, so this variant
+   is no longer used. Left in case a future surface-word display mode is
+   reintroduced. ---
+.interlinear-original.is-surface {
+  font-family: var(--font-ui);
+  font-weight: 600;
+}
+*/
+
 .interlinear-translit {
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -127,6 +210,11 @@ function onRowClick(event, verseNumber, tag) {
   font-size: 0.65rem;
   color: var(--text-muted);
   font-family: monospace;
+}
+
+.strongs-badges {
+  display: flex;
+  gap: 4px;
 }
 
 .strongs-badge {

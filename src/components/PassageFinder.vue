@@ -106,6 +106,57 @@ function scrollActiveIntoView() {
   el?.scrollIntoView({ block: 'nearest' });
 }
 
+// --- Translation combobox state --------------------------------------------
+// Same pattern as the book combobox above, kept as a separate, smaller
+// instance rather than generalizing the two into one reusable component —
+// the book list is grouped/large/keyboard-searchable in a way the
+// translation list (currently 2 entries) doesn't need yet. Worth merging
+// into a shared component if this list grows significantly.
+
+const TRANSLATIONS = [
+  { code: 'KJV', name: 'King James Version' },
+  { code: 'BSB', name: 'Berean Standard Bible' },
+];
+
+const isTransOpen = ref(false);
+const transRootEl = ref(null);
+const transTriggerEl = ref(null);
+
+const activeTranslation = computed(
+  () => TRANSLATIONS.find(t => t.code === form.translation) || TRANSLATIONS[0]
+);
+
+function openTransList() {
+  isTransOpen.value = true;
+}
+
+function closeTransList() {
+  isTransOpen.value = false;
+  transTriggerEl.value?.focus();
+}
+
+function toggleTransList() {
+  isTransOpen.value ? closeTransList() : openTransList();
+}
+
+function selectTranslation(code) {
+  form.translation = code;
+  isTransOpen.value = false;
+  transTriggerEl.value?.focus();
+}
+
+function moveActiveTranslation(delta) {
+  if (!isTransOpen.value) {
+    openTransList();
+    return;
+  }
+  const len = TRANSLATIONS.length;
+  if (!len) return;
+  const idx = TRANSLATIONS.findIndex(t => t.code === form.translation);
+  const next = (idx + delta + len) % len;
+  form.translation = TRANSLATIONS[next].code;
+}
+
 // FIX: only close (and refocus) the trigger when the dropdown is actually
 // open. Without the `isOpen.value &&` guard, this fired on every mousedown
 // anywhere on the page - clicking an interlinear row, a cross-reference,
@@ -114,6 +165,7 @@ function scrollActiveIntoView() {
 // causing the whole page to snap back to the top on unrelated clicks.
 function onClickOutside(e) {
   if (isOpen.value && rootEl.value && !rootEl.value.contains(e.target)) closeList();
+  if (isTransOpen.value && transRootEl.value && !transRootEl.value.contains(e.target)) closeTransList();
 }
 
 onMounted(() => document.addEventListener('mousedown', onClickOutside));
@@ -204,12 +256,50 @@ function submit() {
           title="Leave blank to load the whole chapter"
         />
       </div>
-      <div class="input-group">
-        <label for="trans-select">Translation</label>
-        <select id="trans-select" v-model="form.translation" class="input-control">
-          <option value="KJV">KJV</option>
-        </select>
+
+      <div class="input-group translation-combobox" ref="transRootEl">
+        <label for="trans-input">Translation</label>
+        <div class="combobox-wrap">
+          <button
+            id="trans-input"
+            ref="transTriggerEl"
+            type="button"
+            class="input-control combobox-trigger"
+            role="combobox"
+            :aria-expanded="isTransOpen"
+            aria-haspopup="listbox"
+            aria-controls="trans-listbox"
+            @click="toggleTransList"
+            @keydown.down.prevent="moveActiveTranslation(1)"
+            @keydown.up.prevent="moveActiveTranslation(-1)"
+            @keydown.esc="closeTransList"
+          >
+            <span>{{ activeTranslation.code }}</span>
+            <i class="fa-solid fa-chevron-down combobox-caret"></i>
+          </button>
+
+          <ul
+            v-if="isTransOpen"
+            id="trans-listbox"
+            class="combobox-list translation-list"
+            role="listbox"
+          >
+            <li
+              v-for="t in TRANSLATIONS"
+              :key="t.code"
+              role="option"
+              :aria-selected="t.code === form.translation"
+              class="combobox-option translation-option"
+              :class="{ 'is-active': t.code === form.translation }"
+              @click="selectTranslation(t.code)"
+            >
+              <span class="translation-code">{{ t.code }}</span>
+              <span class="translation-name">{{ t.name }}</span>
+            </li>
+          </ul>
+        </div>
       </div>
+
       <button class="btn-fetch focus-ring" type="button" :disabled="store.isLoadingPassage" @click="submit">
         <i v-if="store.isLoadingPassage" class="fa-solid fa-spinner fa-spin"></i>
         <i v-else class="fa-solid fa-arrow-right"></i>
@@ -275,11 +365,7 @@ function submit() {
   border-color: var(--border-focus);
 }
 
-select.input-control {
-  cursor: pointer;
-}
-
-/* --- Book combobox --- */
+/* --- Combobox (shared visual style: book + translation) --- */
 
 .combobox-wrap {
   position: relative;
@@ -349,6 +435,35 @@ select.input-control {
 .combobox-option.is-active {
   background-color: var(--bg-input);
   font-weight: 700;
+}
+
+/* --- Translation combobox: two-line option (code + full name) --- */
+
+.translation-list {
+  min-width: 220px;
+}
+
+.translation-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.translation-code {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.translation-option.is-active .translation-code {
+  color: var(--accent-primary);
+}
+
+.translation-name {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-style: italic;
 }
 
 .btn-fetch {

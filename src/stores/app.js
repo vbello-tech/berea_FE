@@ -77,7 +77,19 @@ export const useAppStore = defineStore('app', {
     isLoggedIn: (state) => !!state.authToken,
 
     interlinearCount: (state) =>
-      state.verses.reduce((sum, v) => sum + (v.word_tags || []).length, 0),
+      state.verses.reduce((sum, v) => {
+        // KJV has exact surface-word tagging (kjv_strongs_tags: real
+        // Strong's numbers on the literal displayed KJV words). Every
+        // other translation falls back to the fuller original-language
+        // breakdown (word_tags), since no equivalent surface-word
+        // dataset exists for them yet. Must match InterlinearTab.vue's
+        // own per-verse choice, or this count (used for the tab badge
+        // and FAB badge) will disagree with what's actually shown.
+        const tags = v.translation === 'KJV' && (v.kjv_strongs_tags || []).length > 0
+          ? v.kjv_strongs_tags
+          : (v.word_tags || []);
+        return sum + tags.length;
+      }, 0),
 
     crossRefCount: (state) =>
       state.verses.reduce(
