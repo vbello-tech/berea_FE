@@ -117,7 +117,9 @@ const TRANSLATIONS = [
   { code: 'KJV', name: 'King James Version' },
   { code: 'ASV', name: 'American Standard Version' },
   { code: 'BSB', name: 'Berean Standard Bible' },
+  { code: 'YLT', name: 'Youngs Literal Translation' },
 ];
+
 
 const isTransOpen = ref(false);
 const transRootEl = ref(null);
