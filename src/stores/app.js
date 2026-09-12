@@ -23,6 +23,10 @@ export const useAppStore = defineStore('app', {
     // content in SidebarNav; shared here since they're sibling components.
     mobileMenuOpen: false,
     isLoadingPassage: false,
+    // Study Suite data (concordance/cross-refs/word tags) loads separately
+    // from the reader-shape passage fetch above, and after it resolves —
+    // see loadPassage. StudyPanel shows its own loading state off this.
+    isLoadingStudy: false,
     passageError: null,
 
     // Study panel
@@ -85,6 +89,8 @@ export const useAppStore = defineStore('app', {
         // dataset exists for them yet. Must match InterlinearTab.vue's
         // own per-verse choice, or this count (used for the tab badge
         // and FAB badge) will disagree with what's actually shown.
+        // Before study data has loaded, word_tags/kjv_strongs_tags are
+        // simply absent from each verse yet, so this safely reads 0.
         const tags = v.translation === 'KJV' && (v.kjv_strongs_tags || []).length > 0
           ? v.kjv_strongs_tags
           : (v.word_tags || []);
@@ -117,6 +123,14 @@ export const useAppStore = defineStore('app', {
     },
 
     // ---------- Passage loading ----------
+    // Two-step: the reader-shape fetch (/passage/ — fast, just verse text)
+    // resolves and renders first; the study-shape fetch (/passage/study/ —
+    // concordance/cross-refs/word tags, much heavier to prefetch and
+    // serialize) kicks off right after and merges in once it lands, so the
+    // reader is interactive well before Study Suite data is ready. If the
+    // reader fetch itself fails, the study fetch is skipped entirely —
+    // no point loading study data for a passage that didn't load.
+    //
     // start/end are optional — when omitted, the backend returns the
     // whole chapter. The actual verse range for a whole-chapter response
     // is derived from what's returned (first/last verse_number), so
@@ -136,12 +150,12 @@ export const useAppStore = defineStore('app', {
       this.passageError = null;
       const wholeChapter = !start;
 
-      try {
-        let url = `/passage/?book=${encodeURIComponent(book)}&chapter=${chapter}&translation=${translation}`;
-        if (start) url += `&start=${start}`;
-        if (end) url += `&end=${end}`;
+      let baseUrl = `?book=${encodeURIComponent(book)}&chapter=${chapter}&translation=${translation}`;
+      if (start) baseUrl += `&start=${start}`;
+      if (end) baseUrl += `&end=${end}`;
 
-        const data = await apiFetch(url, {}, this.authToken);
+      try {
+        const data = await apiFetch(`/passage/${baseUrl}`, {}, this.authToken);
         this.verses = data.results;
 
         const firstVerse = data.results[0];
@@ -169,8 +183,24 @@ export const useAppStore = defineStore('app', {
           message: err.message,
         };
         this.showToast(err.message || 'Could not reach the API. Is the Django server running?', true);
-      } finally {
         this.isLoadingPassage = false;
+        return;
+      }
+
+      this.isLoadingPassage = false;
+
+      // Reader is rendered and interactive at this point. Study data loads
+      // in the background; StudyPanel shows its own loading indicator via
+      // isLoadingStudy while this is in flight.
+      this.isLoadingStudy = true;
+      try {
+        const studyData = await apiFetch(`/passage/study/${baseUrl}`, {}, this.authToken);
+        const studyByVerseNumber = new Map(studyData.results.map(v => [v.verse_number, v]));
+        this.verses = this.verses.map(v => ({ ...v, ...(studyByVerseNumber.get(v.verse_number) || {}) }));
+      } catch (err) {
+        this.showToast('Could not load Study Suite data for this passage.', true);
+      } finally {
+        this.isLoadingStudy = false;
       }
     },
 
@@ -225,6 +255,9 @@ export const useAppStore = defineStore('app', {
       };
     },
 
+    // Uses the lightweight /passage/ endpoint (not /passage/study/) since
+    // the preview modal only ever needs verse text, never concordance/
+    // cross-reference/word-tag data.
     async openVersePreview(referenceLabel) {
       this.versePreview = { show: true, loading: true, error: null, reference: referenceLabel, verses: [] };
 

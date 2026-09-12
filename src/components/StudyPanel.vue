@@ -97,8 +97,14 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
       </div>
 
       <div class="tabs-body">
-        <InterlinearTab v-show="store.activeTab === 'interlinear'" />
-        <CrossRefTab v-show="store.activeTab === 'crossref'" />
+        <div v-if="store.isLoadingStudy" class="study-loading">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          Loading study data…
+        </div>
+        <template v-else>
+          <InterlinearTab v-show="store.activeTab === 'interlinear'" />
+          <CrossRefTab v-show="store.activeTab === 'crossref'" />
+        </template>
       </div>
     </div>
 
@@ -208,6 +214,17 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown));
   padding: 16px;
   display: flex;
   flex-direction: column;
+}
+
+.study-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex: 1;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
 /* Floating trigger buttons: desktop-hidden, since the panel is already
