@@ -43,7 +43,7 @@ const store = useAppStore();
 
 <style scoped>
 .reader-panel {
-  padding: 24px 32px;
+  padding: 0 32px 24px; /* top padding removed */
   overflow-y: auto;
   overflow-anchor: none;
   overscroll-behavior: contain;
@@ -54,6 +54,7 @@ const store = useAppStore();
 }
 
 .section-header {
+  margin-top: 24px; /* replaces the padding-top that used to provide this */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -120,9 +121,13 @@ const store = useAppStore();
 
 @media (max-width: 560px) {
   .reader-panel {
-    padding: 16px;
+    padding: 0 16px 16px;
     gap: 16px;
     overflow-y: visible;
+  }
+
+  .section-header {
+    margin-top: 16px;
   }
 
   .passage-display {

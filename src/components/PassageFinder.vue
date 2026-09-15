@@ -318,6 +318,9 @@ function submit() {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
 }
 
 .finder-title {
@@ -369,6 +372,11 @@ function submit() {
 }
 
 /* --- Combobox (shared visual style: book + translation) --- */
+
+.book-combobox .combobox-list {
+  width: 300px;
+  max-width: 90vw;
+}
 
 .combobox-wrap {
   position: relative;
@@ -501,22 +509,65 @@ function submit() {
   .controls-grid {
     grid-template-columns: repeat(3, 1fr);
   }
+
+  .passage-finder {
+    top: var(--header-height, 68px);
+  }
 }
 
 @media (max-width: 560px) {
   .passage-finder {
-    padding: 16px;
+    padding: 12px;
+  }
+
+  .finder-title {
+    margin-bottom: 8px;
   }
 
   .controls-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    align-items: end;
+  }
+
+  .input-group {
+    gap: 3px;
+    min-width: 0; /* lets a grid item shrink below its content's natural width */
+  }
+
+  .input-group label {
+    font-size: 0.65rem;
+    white-space: nowrap;
+  }
+
+  .input-control {
+    padding: 6px 8px;
+    font-size: 0.85rem;
+  }
+
+  .combobox-trigger span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .combobox-caret {
+    font-size: 0.65rem;
+    flex-shrink: 0;
+  }
+
+  .combobox-list {
+    max-height: 320px;
+    min-width: 140px;
   }
 
   .btn-fetch {
-    grid-column: 1 / -1;
+    height: 34px;
+    padding: 6px 8px;
+    font-size: 0.85rem;
     justify-content: center;
-    width: 100%;
   }
 }
+
 </style>
