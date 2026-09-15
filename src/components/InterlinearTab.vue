@@ -5,62 +5,32 @@ import VerseAccordion from './VerseAccordion.vue';
 const store = useAppStore();
 
 // word_tags is the ONLY interlinear data source, and it's identical no
-// matter which Bible translation the user has open -- the API
-// (VerseSerializer.get_word_tags) always sources it from STEPBible's
-// original-language tagging via the matching BSB verse, with no
+// matter which Bible translation the user has open -- the API always
+// sources it from STEPBible's original-language tagging, with no
 // per-translation filtering. Switching translations in the reader does
 // not change what shows here.
 //
-// A word tagged with a compound Strong's field (e.g. "H0853/H01254" --
-// an untranslated object marker folded onto the nearest content word,
-// see Gen.1.1#03) arrives from the API as one object with
-// strongs_number as a list (see serializers.py's
-// _group_tags_by_position), so no client-side merging/deduping is
-// needed here.
+// Each WordTag row from the API carries a single strongs_number (plain
+// string). A word that maps to more than one original-language element
+// (e.g. an untranslated object marker folded onto a content word) is
+// represented as MULTIPLE separate rows sharing the same position --
+// not one row with an array of numbers. `uid` includes an index suffix
+// so Vue's v-for key stays unique even when two rows share a position.
 //
 // NOTE: word_tags always follows ORIGINAL Hebrew/Greek word order, never
 // any translation's English reading order -- this is true for every
 // translation now, including KJV.
 function tagsForVerse(v) {
-  return (v.word_tags || []).map((t) => ({
-    uid: `w-${t.position}`,
+  return (v.word_tags || []).map((t, idx) => ({
+    uid: `w-${t.position}-${idx}`,
     position: t.position,
     mainWord: t.original_word,
     transliteration: t.transliteration,
     gloss: t.gloss,
-    strongsNumbers: t.strongs_number, // array, e.g. ["H0853", "H1254"]
+    strongsNumber: t.strongs_number, // plain string, e.g. "G1510"
     morphology: t.morphology,
   }));
 }
-
-// --- was ---
-// function tagsForVerse(v) {
-//   if (v.translation === 'KJV' && (v.kjv_strongs_tags || []).length > 0) {
-//     return v.kjv_strongs_tags.map((t) => {
-//       const hasOriginal = !!t.original_word;
-//       return {
-//         uid: `k-${t.position}`,
-//         position: t.position,
-//         mainWord: hasOriginal ? t.original_word : t.surface_word,
-//         transliteration: t.transliteration,
-//         gloss: hasOriginal ? t.surface_word : '',
-//         strongsNumbers: t.strongs_number,
-//         morphology: t.morphology,
-//         isOriginal: hasOriginal,
-//       };
-//     });
-//   }
-//   return (v.word_tags || []).map((t) => ({
-//     uid: `w-${t.position}`,
-//     position: t.position,
-//     mainWord: t.original_word,
-//     transliteration: t.transliteration,
-//     gloss: t.gloss,
-//     strongsNumbers: t.strongs_number,
-//     morphology: t.morphology,
-//     isOriginal: true,
-//   }));
-// }
 
 function isActiveRow(verseNumber, position) {
   if (!store.activeWord) return false;
@@ -72,13 +42,7 @@ function isActiveRow(verseNumber, position) {
 
 function onRowClick(event, verseNumber, tag) {
   store.setActiveWord(verseNumber, tag.position);
-  store.openPopover(tag.strongsNumbers[0]);
-}
-
-function onBadgeClick(event, verseNumber, tag, strongsNumber) {
-  event.stopPropagation();
-  store.setActiveWord(verseNumber, tag.position);
-  store.openPopover(strongsNumber);
+  store.openPopover(tag.strongsNumber);
 }
 </script>
 
@@ -111,14 +75,7 @@ function onBadgeClick(event, verseNumber, tag, strongsNumber) {
             <span class="interlinear-original">{{ t.mainWord }}</span>
             <span class="interlinear-translit">{{ t.transliteration }}</span>
             <span class="interlinear-gloss">{{ t.gloss }}</span>
-            <span class="strongs-badges">
-              <span
-                v-for="s in t.strongsNumbers"
-                :key="s"
-                class="strongs-badge"
-                @click="onBadgeClick($event, v.verse_number, t, s)"
-              >{{ s }}</span>
-            </span>
+            <span class="strongs-badge">{{ t.strongsNumber }}</span>
             <span class="interlinear-morph">{{ t.morphology }}</span>
           </div>
         </VerseAccordion>
@@ -182,17 +139,6 @@ function onBadgeClick(event, verseNumber, tag, strongsNumber) {
   min-width: 70px;
 }
 
-/* --- was: KJV surface-word rows showed plain English, needing a
-   non-serif style variant (.is-surface). mainWord is always the
-   original-language script now, for every translation, so this variant
-   is no longer used. Left in case a future surface-word display mode is
-   reintroduced. ---
-.interlinear-original.is-surface {
-  font-family: var(--font-ui);
-  font-weight: 600;
-}
-*/
-
 .interlinear-translit {
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -210,11 +156,6 @@ function onBadgeClick(event, verseNumber, tag, strongsNumber) {
   font-size: 0.65rem;
   color: var(--text-muted);
   font-family: monospace;
-}
-
-.strongs-badges {
-  display: flex;
-  gap: 4px;
 }
 
 .strongs-badge {
